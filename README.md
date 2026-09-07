@@ -1,75 +1,119 @@
 # University Student-Support Case Agent
 
-## Project Team
+A bounded AI-native student-support case agent for routine academic-support queries, simulated case-status checks, and controlled support-ticket workflows.
+
+## Project Summary
+This project is a BSE4104 capstone prototype for an AI-native student-support system at Makerere University. The solution is intentionally limited to a realistic academic-support domain: helping students understand approved guidance, checking simulated timetable or case-status information, and creating or routing routine support requests in a traceable workflow.
+
+The system is designed around an important principle: AI is used where it adds value in understanding, retrieval, explanation, and workflow assistance, while deterministic software remains responsible for validation, authorization, routing rules, and controlled system actions. Any high-impact or sensitive decisions remain under human approval.
+
+## Team
 - OkemaPaulMark — paulokema342@gmail.com
 - KizitoRyan — ryankizito08@gmail.com
 - Benita Akakikunda — benitaakakikunda@gmail.com
 - Seand1975
 - Mwesigwa Duncan — mwesigwaduncan@gmail.com
 
-## Problem Statement
-University students often need quick answers to routine academic-support questions, such as how to interpret a timetable, when a course-related issue should be escalated, or how to start a support case for an academic concern. These requests are often spread across different university documents, email threads, and support procedures. Without a governed and traceable workflow, students may receive inconsistent guidance and support teams may struggle to monitor case status, route issues, and document decisions.
+## Problem
+University students often face fragmented guidance across documents, portals, and support procedures. Common academic tasks such as checking timetable details, clarifying course-related issues, or starting a support request can be slow and inconsistent when the relevant guidance is not centralized or clearly traceable.
 
-## Target User
-The primary user is a university student who needs help with common academic-support questions and case initiation. Secondary users include academic support staff and student support administrators who review, validate, and route student requests.
+## Target Users
+- Students seeking help with common academic-support questions
+- Support staff who need a clear and auditable routing workflow
+- Course and student-service teams who need a bounded, governed support process
 
 ## Project Objective
-This project aims to prototype a bounded AI-native student-support case agent that can help students with common academic-support questions using approved university and course documents. The agent will support a traceable workflow for retrieving relevant guidance, checking simulated case-status information, creating or updating a support case, and routing the case to the correct support queue when appropriate.
+To prototype a bounded, AI-assisted student-support case agent that can:
+- interpret student questions in natural language
+- retrieve and explain approved academic guidance
+- check simulated case-status or timetable information
+- create a routine support ticket or case record
+- route support requests according to deterministic rules
+- require human approval for escalation or high-impact decisions
 
-## Primary Workflow
-1. A student submits a question or request through the application.
-2. The system identifies the relevant approved knowledge source and retrieves context.
-3. The AI summarizes or explains the guidance in a supported and grounded way.
-4. If the request involves a case, the system checks simulated student case/status information.
-5. The system validates required inputs and creates a support ticket or case record.
-6. The case is routed according to deterministic rules and business logic.
-7. Human staff review and approval are required for escalation or any high-impact action.
+## Primary End-to-End Workflow
+1. A student submits a question or support request.
+2. The system identifies the relevant approved knowledge source.
+3. The AI provides a grounded explanation or next step using approved content.
+4. If case handling is needed, the system checks simulated case-status or timetable information.
+5. The system validates required inputs and creates a support case record.
+6. The case is routed using deterministic business rules.
+7. Human staff review is required for escalation or any sensitive outcome.
 
 ## Role of AI
-AI is used for bounded language understanding, retrieval assistance, summarization, question interpretation, intent classification, and workflow support. The AI helps a student understand approved guidance and assists with structured case creation when grounded in validated sources and approved business rules.
+AI supports the project in the following bounded ways:
+- natural-language understanding of student requests
+- retrieval assistance for approved knowledge sources
+- explanation and summarization of academic guidance
+- case and workflow assistance within a controlled domain
+
+AI does not make final decisions about grades, admissions, fee matters, disciplinary actions, medical issues, or legal matters.
 
 ## Deterministic Responsibilities
-The software layer remains responsible for: validating required fields, checking simulated status information, enforcing routing rules, authorizing access within the approved scope, creating structured records, and preventing unsupported actions. Deterministic logic must also maintain the rules for what the system may and may not do.
+The deterministic software layer handles:
+- input validation
+- authorization and permission checks
+- case-state tracking
+- routing based on business rules
+- creation and updates to simulated support records
+- blocking unsupported or high-impact actions
 
 ## Human Approval Boundaries
-Human approval is required for any escalation outside the bounded workflow, for any decision that affects a student’s academic record, grading, fees, disciplinary action, medical or legal matters, or any other high-impact outcome. The project intentionally avoids these decisions.
+Human approval remains required for:
+- escalations outside the bounded support workflow
+- academic or operational decisions with significant impact
+- concerns involving fees, disciplinary matters, grades, legal issues, or medical matters
+- any case beyond the project’s defined scope
 
-## Initial Scope
-This project will cover the following bounded scope:
-- grounded student questions using approved academic documents
-- simulated timetable or case-status lookups
-- case creation and routing for routine academic support issues
-- session/case state tracking during a workflow
-- deterministic validation and controlled routing
-- human-in-the-loop review for escalations and high-impact decisions
+## Scope of the Prototype
+This prototype includes:
+- grounded academic-support questions using approved documentation
+- case creation and status checking in simulated data
+- basic workflow orchestration and case-state tracking
+- deterministic validation and routing logic
+- documentation and evidence for traceability and review
+
+This prototype intentionally excludes:
+- live institutional systems integration
+- confidential university or student data
+- fees, grading, admission, legal, or disciplinary decisions
+- any uncontrolled general-purpose chatbot behavior
 
 ## Planned Technology Areas
-- Python-based application logic or backend service
-- lightweight web or console UI for demonstration
-- retrieval and document grounding patterns with approved source material
-- structured workflow orchestration
-- deterministic validation and routing rules
-- documentation, traceability, and evaluation artifacts
+- Python for backend/service logic
+- lightweight UI or console demo interface
+- retrieval and grounding on approved project knowledge
+- deterministic workflow and validation logic
+- documentation, evaluation, and evidence tracking
 
 ## Repository Structure
-The repository is organized to separate project requirements, architecture decisions, evidence, and weekly planning from implementation artifacts.
+- `README.md` — project overview and GitHub homepage
+- `docs/requirements/` — charter, user stories, AI boundary matrix
+- `docs/architecture/` — initial architecture and context diagram
+- `docs/evaluation/` — evaluation planning and traceability notes
+- `docs/weekly-reports/` — progress reporting
+- `docs/ai-engineering-log.md` — AI-assisted work log
+- `prompts/` — prompt and workflow notes
+- `knowledge/` — approved project knowledge sources
+- `src/` — implementation artifacts as they are added
+- `tests/` — validation artifacts
+- `evidence/` — screenshots and traces
+- `demo/` — demonstration materials
 
 ## Development Status
-This repository currently contains the Week 1 planning and documentation baseline for the capstone project. Features and implementation details are intentionally scoped to a realistic 8-week academic project and do not claim production-level deployment or live data integration.
+Week 1 planning and requirement framing are complete and documented in the repository. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
 
 ## Responsible AI / Engineering Note
-This project follows a bounded, traceable AI design. AI is used to support student queries and workflow coordination only within controlled, approved boundaries. All decisions with significant operational or academic impact remain under human review. All knowledge sources are synthetic, public, or approved by the project team; no confidential university or personal data is used.
+This project follows a bounded, traceable AI design. AI is used only in approved support scenarios and must remain grounded in curated academic knowledge. High-impact operational decisions are intentionally withheld from automated processing and remain under human review. No confidential university or personal data is used in the project.
 
-## Repository Layout
-- `README.md` — project overview and scope
-- `docs/requirements/` — project charter, user stories, AI boundary matrix
-- `docs/architecture/` — initial architecture and planned system boundaries
-- `docs/evaluation/` — evaluation approach and traceability notes
-- `docs/weekly-reports/` — Week 1 progress and future reporting
-- `docs/ai-engineering-log.md` — record of material AI-assisted work
-- `prompts/` — prompt and workflow documentation
-- `knowledge/` — approved knowledge sources and prompts for ground truth
-- `src/` — implementation artifacts as they are added
-- `tests/` — validation and test artifacts
-- `evidence/` — screenshots and traces for project record
-- `demo/` — demonstration material
+## GitHub Presentation Summary
+This repository demonstrates a professional Week 1 capstone foundation for a bounded AI-native support workflow. It focuses on problem framing, requirement definition, AI boundary design, and early architecture planning in a way that is realistic, academically defensible, and safe for student-support use cases.
+
+## Project Evidence and Reporting
+- Week 1 details and progress are recorded in `docs/weekly-reports/week-1-progress-report.md`
+- The AI engineering log is in `docs/ai-engineering-log.md`
+- The initial system context is in `docs/architecture/initial-architecture.md`
+- The ClickUp task plan is in `docs/clickup-week1-task-plan.md`
+
+## License and Safety Note
+This repository is for academic and project demonstration purposes only. It does not contain real credentials, secrets, protected academic records, or production user data.
