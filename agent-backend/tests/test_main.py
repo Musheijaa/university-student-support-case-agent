@@ -55,6 +55,52 @@ def test_whitespace_only_message():
     assert response.status_code == 422
 
 
+def test_non_string_message_type_rejected():
+    response = client.post("/api/v1/student-support", json={"message": 123})
+    assert response.status_code == 422
+
+    response = client.post("/api/v1/student-support", json={"message": None})
+    assert response.status_code == 422
+
+
+def test_message_with_surrounding_whitespace_is_accepted(monkeypatch):
+    fake_result = StudentSupportResult(
+        response="1. Direct answer...\n2. Limitation...\n3. Next step...",
+        prompt_version="v2.0",
+        model="openai/gpt-oss-20b",
+    )
+    monkeypatch.setattr(main_module, "get_student_support_response", lambda message: fake_result)
+
+    response = client.post(
+        "/api/v1/student-support",
+        json={"message": "  How does course registration work?  "},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["response"] == fake_result.response
+    assert body["prompt_version"] == "v2.0"
+    assert body["model"] == "openai/gpt-oss-20b"
+
+
+def test_message_with_newlines_is_accepted(monkeypatch):
+    fake_result = StudentSupportResult(
+        response="Use the registration portal...",
+        prompt_version="v2.0",
+        model="openai/gpt-oss-20b",
+    )
+    monkeypatch.setattr(main_module, "get_student_support_response", lambda message: fake_result)
+
+    response = client.post(
+        "/api/v1/student-support",
+        json={"message": "How does course registration work?\nWhat if I miss the deadline?"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert set(body.keys()) == {"response", "prompt_version", "model"}
+
+
 def test_excessively_long_message():
     long_message = "a" * 5000
     response = client.post("/api/v1/student-support", json={"message": long_message})
@@ -68,6 +114,11 @@ def test_malformed_request_body():
         headers={"Content-Type": "application/json"},
     )
     assert response.status_code == 422
+
+
+def test_unknown_route_returns_404():
+    response = client.get("/definitely-not-a-real-route")
+    assert response.status_code == 404
 
 
 def test_missing_api_configuration(monkeypatch):
