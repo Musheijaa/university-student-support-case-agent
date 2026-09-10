@@ -93,15 +93,119 @@ This prototype intentionally excludes:
 - `docs/evaluation/` — evaluation planning and traceability notes
 - `docs/weekly-reports/` — progress reporting
 - `docs/ai-engineering-log.md` — AI-assisted work log
+- `docs/model-selection.md` — Week 2: why an external foundation-model API was chosen
+- `docs/prompt-specification.md` — Week 2: versioned prompt specification (V1.0, V2.0)
+- `docs/prompt-evaluation.md` — Week 2: prompt evaluation test cases and results
 - `prompts/` — prompt and workflow notes
 - `knowledge/` — approved project knowledge sources
-- `src/` — implementation artifacts as they are added
-- `tests/` — validation artifacts
+- `agent-backend/` — FastAPI backend and LLM integration (see `agent-backend/README.md`); includes `agent-backend/tests/`
+- `frontend/` — React (Vite) dashboard scaffold; no application code implemented yet
 - `evidence/` — screenshots and traces
 - `demo/` — demonstration materials
 
 ## Development Status
-Week 1 planning and requirement framing are complete and documented in the repository. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
+Week 1 planning and requirement framing are complete and documented in the repository. Week 2 adds a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response, with no document retrieval or agentic behavior yet. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
+
+## Week 2: Running the Baseline
+
+The Week 2 baseline is a FastAPI backend in `agent-backend/` (flat layout —
+`main.py` sits directly in that folder, not nested under `src/`) with two
+endpoints:
+
+- `GET /health` — liveness check, independent of the LLM provider.
+- `POST /api/v1/student-support` — sends a student's question to Groq using a versioned prompt (see `agent-backend/llm/prompts.py` and `docs/prompt-specification.md`) and returns a structured JSON response.
+
+It intentionally does **not** yet include document retrieval (RAG), tools/function calling, case memory, or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
+
+A `frontend/` folder holds a scaffolded React (Vite) dashboard — dependencies installed, no application code written yet. See [Frontend scaffold](#frontend-scaffold) below.
+
+### 1. Clone the project
+
+```bash
+git clone <repository-url>
+cd university-student-support-case-agent
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+cd agent-backend
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure environment variables
+
+Copy the example file and fill in a real Groq API key locally (never commit it):
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set:
+
+```env
+GROQ_API_KEY=your-real-key-here
+GROQ_MODEL=openai/gpt-oss-20b
+```
+
+Get a key from https://console.groq.com. Without a configured key, the API still runs and `/health` still works, but `/api/v1/student-support` returns `503`.
+
+### 5. Start the backend
+
+Run from inside `agent-backend/`:
+
+```bash
+uvicorn main:app --reload
+```
+
+### 6. Open the interactive API docs
+
+Visit http://127.0.0.1:8000/docs (Swagger/OpenAPI UI) to try both endpoints from the browser.
+
+### 7. Test `/health`
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Expected: `{"status":"ok"}`
+
+### 8. Test `/api/v1/student-support`
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/student-support \
+  -H "Content-Type: application/json" \
+  -d '{"message": "How does course registration work?"}'
+```
+
+Expected (once `GROQ_API_KEY` is set): a JSON body with `response`, `prompt_version`, and `model` fields.
+
+### 9. Run the automated tests
+
+Run from inside `agent-backend/`:
+
+```bash
+pytest -v
+```
+
+## Frontend scaffold
+
+`frontend/` is a React app scaffolded with Vite (`npm create vite@latest frontend -- --template react`). Only dependencies are installed — no dashboard UI has been implemented yet; that begins in a later week.
+
+```bash
+cd frontend
+npm install   # already done; re-run only if node_modules is missing
+npm run dev   # starts the Vite dev server to confirm the scaffold runs
+```
+
+The test suite mocks the Groq API boundary, so it runs without a real API key. A separate, explicitly-opt-in real-API test (`tests/test_integration_groq.py`) is skipped unless `GROQ_API_KEY` is configured.
 
 ## Responsible AI / Engineering Note
 This project follows a bounded, traceable AI design. AI is used only in approved support scenarios and must remain grounded in curated academic knowledge. High-impact operational decisions are intentionally withheld from automated processing and remain under human review. No confidential university or personal data is used in the project.
