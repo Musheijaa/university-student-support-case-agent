@@ -1,8 +1,10 @@
-"""FastAPI application entry point for the Week 2 baseline.
+"""FastAPI application entry point.
 
 Exposes:
   GET  /health                    - liveness check, independent of the LLM provider
-  POST /api/v1/student-support    - baseline foundation-model student-support interaction
+  POST /api/v1/student-support    - RAG-grounded student-support interaction (Week 3);
+                                     retrieves evidence from the ingested corpus before
+                                     calling Groq, and returns the sources used
 """
 
 import logging
@@ -15,7 +17,12 @@ from llm.service import (
     LLMRequestError,
     get_student_support_response,
 )
-from schemas import HealthResponse, StudentSupportRequest, StudentSupportResponse
+from schemas import (
+    HealthResponse,
+    SourceResponse,
+    StudentSupportRequest,
+    StudentSupportResponse,
+)
 
 logging.basicConfig(level=get_settings().log_level)
 logger = logging.getLogger(__name__)
@@ -23,10 +30,11 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="University Student-Support Case Agent API",
     description=(
-        "Week 2 baseline: a foundation-model-only student-support interaction. "
-        "No document retrieval, tools, or agentic workflow is implemented yet."
+        "Week 3: retrieval-augmented student-support interaction, grounded in a "
+        "controlled corpus of Makerere University policy documents. "
+        "No tools, agents, or persistent memory are implemented yet."
     ),
-    version="0.2.0",
+    version="0.3.0",
 )
 
 
@@ -60,4 +68,8 @@ def student_support(payload: StudentSupportRequest) -> StudentSupportResponse:
         response=result.response,
         prompt_version=result.prompt_version,
         model=result.model,
+        sources=[
+            SourceResponse(document_id=s.document_id, document=s.document, page=s.page)
+            for s in result.sources
+        ],
     )

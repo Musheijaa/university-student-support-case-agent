@@ -101,9 +101,58 @@ PROMPT_V2 = PromptTemplate(
 )
 
 
+# ---------------------------------------------------------------------------
+# Prompt RAG-v1.0 - Week 3: answer strictly from retrieved evidence
+# ---------------------------------------------------------------------------
+
+_RAG_SYSTEM_PROMPT = """You are a university student-support case agent.
+
+Answer the student's question using ONLY the supplied retrieved
+evidence below. Do not use outside knowledge about universities in
+general or about Makerere University in particular.
+
+Do not invent university policies, dates, procedures, deadlines, or
+case information beyond what is explicitly stated in the evidence.
+
+If the evidence does not contain enough information to answer
+reliably, say clearly that the available sources do not provide
+enough information to answer, rather than guessing.
+
+Do not claim to have checked university systems, created a support
+ticket, or verified an individual student's case status - the
+evidence you are given is a fixed set of policy documents, not a live
+system.
+
+Do not make admissions, grading, disciplinary, or fee decisions.
+
+When you use information from the evidence, refer to the document it
+came from by name (e.g. "According to the Fees Policy...")."""
+
+
+def _build_rag_user_prompt(combined_question_and_evidence: str) -> str:
+    # The evidence + question are pre-combined by
+    # `build_rag_user_message` before being passed in here, so this
+    # keeps the same Callable[[str], str] shape as every other prompt
+    # version.
+    return combined_question_and_evidence
+
+
+PROMPT_RAG = PromptTemplate(
+    version="rag-v1.0",
+    system_prompt=_RAG_SYSTEM_PROMPT,
+    build_user_prompt=_build_rag_user_prompt,
+)
+
+
+def build_rag_user_message(question: str, evidence_block: str) -> str:
+    """Combine retrieved evidence and the student's question into one user message."""
+    return f"RETRIEVED EVIDENCE:\n\n{evidence_block}\n\nSTUDENT QUESTION:\n\n{question}"
+
+
 PROMPTS: dict[str, PromptTemplate] = {
     PROMPT_V1.version: PROMPT_V1,
     PROMPT_V2.version: PROMPT_V2,
+    PROMPT_RAG.version: PROMPT_RAG,
 }
 
 

@@ -104,18 +104,18 @@ This prototype intentionally excludes:
 - `demo/` — demonstration materials
 
 ## Development Status
-Week 1 planning and requirement framing are complete and documented in the repository. Week 2 adds a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response, with no document retrieval or agentic behavior yet. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
+Week 1 planning and requirement framing are complete and documented in the repository. Week 2 added a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response. Week 3 adds retrieval-augmented generation (RAG): the same endpoint now answers from a controlled corpus of Makerere University policy documents (`docs/makerereUniversityPolicyDocs/`), returning the sources each answer is grounded in. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
 
-## Week 2: Running the Baseline
+## Week 2/3: Running the Backend
 
-The Week 2 baseline is a FastAPI backend in `agent-backend/` (flat layout —
+The backend is a FastAPI app in `agent-backend/` (flat layout —
 `main.py` sits directly in that folder, not nested under `src/`) with two
 endpoints:
 
 - `GET /health` — liveness check, independent of the LLM provider.
-- `POST /api/v1/student-support` — sends a student's question to Groq using a versioned prompt (see `agent-backend/llm/prompts.py` and `docs/prompt-specification.md`) and returns a structured JSON response.
+- `POST /api/v1/student-support` — retrieves relevant evidence from the ingested policy corpus, builds a grounded prompt (see `agent-backend/llm/prompts.py` and `docs/prompt-specification.md`), sends it to Groq, and returns the answer plus the sources it was grounded in.
 
-It intentionally does **not** yet include document retrieval (RAG), tools/function calling, case memory, or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
+It intentionally does **not** yet include tools/function calling, case memory, or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
 
 A `frontend/` folder holds a scaffolded React (Vite) dashboard — dependencies installed, no application code written yet. See [Frontend scaffold](#frontend-scaffold) below.
 
@@ -157,19 +157,27 @@ GROQ_MODEL=openai/gpt-oss-20b
 
 Get a key from https://console.groq.com. Without a configured key, the API still runs and `/health` still works, but `/api/v1/student-support` returns `503`.
 
-### 5. Start the backend
+### 5. Build the RAG index (Week 3, one-time)
 
-Run from inside `agent-backend/`:
+Run from inside `agent-backend/`, after installing dependencies:
+
+```bash
+python ingest.py
+```
+
+This extracts, chunks, and embeds `docs/makerereUniversityPolicyDocs/` into a local Chroma index at `agent-backend/data/chroma/` (gitignored — re-run this after cloning or whenever the corpus changes; it's safe to re-run). The first run downloads a small local embedding model (~80MB, cached afterward — no API key needed for this step).
+
+### 6. Start the backend
 
 ```bash
 uvicorn main:app --reload
 ```
 
-### 6. Open the interactive API docs
+### 7. Open the interactive API docs
 
 Visit http://127.0.0.1:8000/docs (Swagger/OpenAPI UI) to try both endpoints from the browser.
 
-### 7. Test `/health`
+### 8. Test `/health`
 
 ```bash
 curl http://127.0.0.1:8000/health
@@ -177,17 +185,17 @@ curl http://127.0.0.1:8000/health
 
 Expected: `{"status":"ok"}`
 
-### 8. Test `/api/v1/student-support`
+### 9. Test `/api/v1/student-support`
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/student-support \
   -H "Content-Type: application/json" \
-  -d '{"message": "How does course registration work?"}'
+  -d '{"message": "What counts as examination malpractice at Makerere?"}'
 ```
 
-Expected (once `GROQ_API_KEY` is set): a JSON body with `response`, `prompt_version`, and `model` fields.
+Expected (once `GROQ_API_KEY` is set and the index is built): a JSON body with `response`, `prompt_version` ("rag-v1.0"), `model`, and a `sources` array listing the document(s)/page(s) the answer was grounded in.
 
-### 9. Run the automated tests
+### 10. Run the automated tests
 
 Run from inside `agent-backend/`:
 

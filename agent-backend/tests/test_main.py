@@ -98,7 +98,7 @@ def test_message_with_newlines_is_accepted(monkeypatch):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body.keys()) == {"response", "prompt_version", "model"}
+    assert set(body.keys()) == {"response", "prompt_version", "model", "sources"}
 
 
 def test_excessively_long_message():
