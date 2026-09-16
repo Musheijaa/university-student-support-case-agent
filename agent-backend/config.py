@@ -22,9 +22,17 @@ class Settings(BaseSettings):
     groq_model: str = "openai/gpt-oss-20b"
 
     # Prompt version currently served by the API. Switching this constant
-    # is how we move between Prompt V1 and Prompt V2 without code changes
-    # elsewhere in the application.
-    active_prompt_version: str = "v2.0"
+    # is how we move between Prompt V1, V2, and the Week 3 RAG prompt
+    # without code changes elsewhere in the application.
+    active_prompt_version: str = "rag-v1.0"
+
+    # Week 3: RAG configuration.
+    embedding_model: str = "chroma-default"
+    chroma_persist_directory: str = "data/chroma"
+    rag_top_k: int = 4
+    rag_min_score: float = 0.35
+    rag_corpus_dir: str = "../docs/makerereUniversityPolicyDocs"
+    rag_collection_name: str = "makerere_policy_docs"
 
     @property
     def groq_configured(self) -> bool:

@@ -6,3 +6,5 @@ python-dotenv
 groq
 pytest
 httpx
+pypdf
+chromadb

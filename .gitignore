@@ -25,6 +25,9 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# RAG vector index (regenerable via `python ingest.py`; not source)
+agent-backend/data/
+
 # Node / frontend
 node_modules/
 frontend/dist/

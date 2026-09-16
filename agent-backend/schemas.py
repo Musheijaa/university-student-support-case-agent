@@ -22,10 +22,17 @@ class StudentSupportRequest(BaseModel):
         return stripped
 
 
+class SourceResponse(BaseModel):
+    document_id: str
+    document: str
+    page: int
+
+
 class StudentSupportResponse(BaseModel):
     response: str
     prompt_version: str
     model: str
+    sources: list[SourceResponse] = []
 
 
 class HealthResponse(BaseModel):
