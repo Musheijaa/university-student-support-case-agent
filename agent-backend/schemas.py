@@ -41,3 +41,16 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class ToolCatalogueItem(BaseModel):
+    name: str
+    description: str
+    purpose: str
+    json_schema: dict
+
+
+class ToolExecutionRequest(BaseModel):
+    tool_name: str = Field(..., description="Name of registered tool to execute.")
+    parameters: dict = Field(..., description="Tool input parameters dictionary.")
+
