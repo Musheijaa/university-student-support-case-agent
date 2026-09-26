@@ -28,11 +28,18 @@ class SourceResponse(BaseModel):
     page: int
 
 
+class ToolCallResponse(BaseModel):
+    tool: str
+    arguments: dict
+    result: dict
+
+
 class StudentSupportResponse(BaseModel):
     response: str
     prompt_version: str
     model: str
     sources: list[SourceResponse] = []
+    tool_calls: list[ToolCallResponse] = []
 
 
 class HealthResponse(BaseModel):
@@ -43,14 +50,18 @@ class ErrorResponse(BaseModel):
     detail: str
 
 
-class ToolCatalogueItem(BaseModel):
-    name: str
+class TicketActionResponse(BaseModel):
+    success: bool
+    ticket_id: str | None = None
+    status: str | None = None
+    error: str | None = None
+
+
+class TicketDetailResponse(BaseModel):
+    ticket_id: str
+    category: str
+    subject: str
     description: str
-    purpose: str
-    json_schema: dict
-
-
-class ToolExecutionRequest(BaseModel):
-    tool_name: str = Field(..., description="Name of registered tool to execute.")
-    parameters: dict = Field(..., description="Tool input parameters dictionary.")
-
+    status: str
+    created_at: str
+    updated_at: str

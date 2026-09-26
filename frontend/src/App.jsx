@@ -1,122 +1,199 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import { askStudentSupport, checkHealth } from './api'
+import renderMarkdown from './markdown'
+import TicketCard from './TicketCard'
+import TimetableCard from './TimetableCard'
 
-function App() {
-  const [count, setCount] = useState(0)
+const STORAGE_KEY = 'unisupport-frontend-settings'
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw)
+  } catch {
+    return {}
+  }
+}
+
+let nextMessageId = 1
+
+export default function App() {
+  const saved = loadSettings()
+  const [baseUrl, setBaseUrl] = useState(saved.baseUrl || 'http://127.0.0.1:8000')
+  const [role, setRole] = useState(saved.role || 'student')
+  const [userId, setUserId] = useState(saved.userId || 'demo-student')
+  const [health, setHealth] = useState('unknown') // 'ok' | 'down' | 'unknown'
+
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const transcriptEndRef = useRef(null)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ baseUrl, role, userId }))
+  }, [baseUrl, role, userId])
+
+  useEffect(() => {
+    let cancelled = false
+    checkHealth(baseUrl)
+      .then(() => !cancelled && setHealth('ok'))
+      .catch(() => !cancelled && setHealth('down'))
+    return () => {
+      cancelled = true
+    }
+  }, [baseUrl])
+
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function handleSend(event) {
+    event.preventDefault()
+    const question = input.trim()
+    if (!question || loading) return
+
+    const userMessage = { id: nextMessageId++, role: 'student', text: question }
+    setMessages((prev) => [...prev, userMessage])
+    setInput('')
+    setLoading(true)
+
+    try {
+      const result = await askStudentSupport(baseUrl, question, role, userId)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextMessageId++,
+          role: 'assistant',
+          text: result.response,
+          promptVersion: result.prompt_version,
+          model: result.model,
+          sources: result.sources || [],
+          toolCalls: result.tool_calls || [],
+        },
+      ])
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { id: nextMessageId++, role: 'error', text: err.message },
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <header className="topbar">
+        <h1>UniSupport AI — Test Console</h1>
+        <div className="settings-row">
+          <label>
+            Backend URL
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="http://127.0.0.1:8000"
+            />
+          </label>
+          <label>
+            Role
+            <select value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="student">student</option>
+              <option value="staff">staff</option>
+              <option value="guest">guest</option>
+            </select>
+          </label>
+          <label>
+            User ID
+            <input value={userId} onChange={(e) => setUserId(e.target.value)} />
+          </label>
+          <span className={`health-dot health-${health}`} title={`Backend: ${health}`} />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+      </header>
+
+      <main className="transcript">
+        {messages.length === 0 && (
+          <p className="empty-hint">
+            Ask a knowledge question (grounded in the policy corpus), a timetable question
+            (e.g. "When is BSE4104 scheduled?"), or describe a problem (e.g. "I can't access
+            the student portal") to see a support-ticket draft. Switch role to "staff" above
+            to approve or reject a resulting ticket.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+        )}
+        {messages.map((message) => (
+          <MessageBubble key={message.id} message={message} baseUrl={baseUrl} role={role} userId={userId} />
+        ))}
+        {loading && <div className="bubble assistant pending">Thinking…</div>}
+        <div ref={transcriptEndRef} />
+      </main>
+
+      <form className="composer" onSubmit={handleSend}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your question…"
+          disabled={loading}
+        />
+        <button type="submit" disabled={loading || !input.trim()}>
+          Send
         </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      </form>
+    </div>
   )
 }
 
-export default App
+function MessageBubble({ message, baseUrl, role, userId }) {
+  if (message.role === 'student') {
+    return <div className="bubble student">{message.text}</div>
+  }
+
+  if (message.role === 'error') {
+    return <div className="bubble error">{message.text}</div>
+  }
+
+  return (
+    <div className="bubble assistant">
+      <div className="response-text">{renderMarkdown(message.text)}</div>
+
+      {message.toolCalls?.length > 0 && (
+        <div className="tool-calls">
+          {message.toolCalls.map((call, i) =>
+            call.tool === 'check_timetable' ? (
+              <TimetableCard key={i} invocationResult={call.result} />
+            ) : call.tool === 'create_support_ticket' ? (
+              <TicketCard
+                key={i}
+                baseUrl={baseUrl}
+                role={role}
+                userId={userId}
+                invocationResult={call.result}
+              />
+            ) : (
+              <div key={i} className="tool-card">
+                {call.tool}: {JSON.stringify(call.result)}
+              </div>
+            ),
+          )}
+        </div>
+      )}
+
+      {message.sources?.length > 0 && (
+        <div className="sources">
+          <div className="sources-title">Sources</div>
+          <ul>
+            {message.sources.map((s, i) => (
+              <li key={i}>
+                {s.document} (p.{s.page})
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="meta">
+        {message.promptVersion} · {message.model}
+      </div>
+    </div>
+  )
+}

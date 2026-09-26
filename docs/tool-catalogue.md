@@ -1,187 +1,154 @@
-# Week 4 Tool Catalogue & Specification
+# Tool Catalogue — Week 4
 
-**UniSupport AI: University Student Support Case Agent**
-*Assignment Week 4: Tools and Function Calling*
+Every tool the model may request is registered in exactly one place:
+`agent-backend/tools/registry.py` (`TOOL_REGISTRY` / `TOOL_DEFINITIONS`).
+Nothing outside that allow-list is ever callable. The model only ever
+*requests* a tool by name and arguments; the application validates,
+authorizes, executes, and validates the result before anything is
+trusted — see `docs/architecture.md` for the full request/response
+loop.
 
----
-
-## Overview
-
-Per the BSE4104 Capstone Project Brief (Week 4), tools allow the AI-native application to perform explicit, deterministic, safe software capabilities beyond raw text generation.
-
-All tools in `agent-backend/tools/` implement a strict engineering contract comprising five required components:
-1. **Purpose**: Explicit rationale and functional intent.
-2. **Input Schema**: Strongly-typed Pydantic model with validation rules and field constraints.
-3. **Output Schema**: Strongly-typed return contract with status metadata and outcome details.
-4. **Authorization**: Explicit token/role permission checks evaluated prior to execution.
-5. **Failure Behaviour**: Graceful containment for validation errors, unauthorized access, missing cases, and system errors without application crashes.
-
----
-
-## Registered Tool Specifications
-
-### 1. `create_support_ticket`
-
-- **Purpose**: Creates a formal student support ticket and routes it to the designated Makerere University department (e.g. Academic Registrar, DICTS IT Helpdesk, Bursar/Financial Aid, Hall Allocation). Performs a low-risk side-effect record creation.
-- **Implementation File**: [`agent-backend/tools/ticket_tool.py`](file:///c:/Users/sean/Desktop/UniveristyAgentic/university-student-support-case-agent/agent-backend/tools/ticket_tool.py)
-- **Input Schema (`CreateTicketInput`)**:
-  - `student_id` (`str`): Student registration number or student ID (min 3, max 20 chars).
-  - `category` (`TicketCategory` Enum): Department category (`Academic Registrar`, `Financial Aid & Bursary`, `Hall Allocation & Accommodation`, `Library Services`, `DICTS / IT Support`, `General Student Affairs`).
-  - `subject` (`str`): Brief summary title of the issue (min 5, max 100 chars).
-  - `description` (`str`): Detailed description of student issue (min 10, max 1000 chars).
-  - `priority` (`TicketPriority` Enum): `LOW`, `MEDIUM`, `HIGH`, `URGENT` (default: `MEDIUM`).
-  - `auth_token` (`str`): Student credentials/token.
-- **Output Schema (`CreateTicketOutput`)**:
-  - `success` (`bool`): Operational success flag.
-  - `ticket_id` (`str | None`): Generated unique ticket ID (e.g. `TICK-2026-8412`).
-  - `status` (`str`): Status code (`CREATED`, `UNAUTHORIZED`, `INVALID_INPUT`, `SERVICE_ERROR`).
-  - `assigned_department` (`str | None`): Department assigned to handle ticket.
-  - `created_at` (`str | None`): ISO 8601 timestamp.
-  - `estimated_response_days` (`int | None`): Expected SLA response days.
-  - `message` (`str`): Human-readable summary message.
-  - `error` (`str | None`): Error code or detail string if failed.
-- **Authorization**:
-  - Validates `auth_token`. Tokens matching `unauthorized`, `expired`, `invalid`, or `forbidden` are rejected.
-  - Unauthorized calls return `status="UNAUTHORIZED"`, `success=False`, and `error="AUTH_DENIED"`.
-- **Failure Behaviour**:
-  - Blank/invalid input fields fail Pydantic validation cleanly (`status="INVALID_INPUT"`, `error="VALIDATION_ERROR"`).
-  - System or unexpected execution exceptions return `status="SERVICE_ERROR"`.
+**Authorization model (bounded, not real authentication):** every
+request carries an `X-User-Role` header (`student` / `staff` / `guest`,
+defaulting to `student` if omitted) and an optional `X-User-Id`,
+resolved in `agent-backend/auth.py`. This is an explicit simulation for
+this academic phase — there is no login, password, or token
+verification behind it. It exists only so tool/endpoint authorization
+rules have something concrete to check.
 
 ---
 
-### 2. `get_case_status`
+## Tool: `check_timetable`
 
-- **Purpose**: Retrieves live status, assigned department officer, progress audit notes, and last update timestamp for an existing student case.
-- **Implementation File**: [`agent-backend/tools/case_tool.py`](file:///c:/Users/sean/Desktop/UniveristyAgentic/university-student-support-case-agent/agent-backend/tools/case_tool.py)
-- **Input Schema (`GetCaseStatusInput`)**:
-  - `case_id` (`str`): Case identifier (e.g., `TICK-2026-1001`).
-  - `student_id` (`str`): Student ID requesting status lookup.
-  - `auth_token` (`str`): Identity verification token.
-- **Output Schema (`GetCaseStatusOutput`)**:
-  - `success` (`bool`): Status lookup success.
-  - `case_id` (`str | None`): Case ID.
-  - `student_id` (`str | None`): Student ID on record.
-  - `category` (`str | None`): Department category.
-  - `subject` (`str | None`): Subject summary.
-  - `status` (`str`): Current status (`UNDER_REVIEW`, `RESOLVED`, `NOT_FOUND`, `UNAUTHORIZED`, etc.).
-  - `assigned_officer` (`str | None`): Officer currently assigned.
-  - `created_at` (`str | None`): ISO creation timestamp.
-  - `last_updated` (`str | None`): ISO last update timestamp.
-  - `notes` (`list[CaseNote]`): Audit and progress notes list.
-  - `message` (`str`): Explanation of status outcome.
-  - `error` (`str | None`): Error code if query failed.
-- **Authorization**:
-  - Verifies token validity and validates ownership: only the student who owns the ticket (or a staff token starting with `staff-`) may query case details.
-  - Student mismatch returns `status="UNAUTHORIZED"`, `error="AUTH_DENIED: Student ID mismatch"`.
-- **Failure Behaviour**:
-  - Non-existent case ID returns `status="NOT_FOUND"`, `error="CASE_NOT_FOUND"`.
+### Purpose
 
----
+Retrieve real class-schedule sessions for a course code from the
+application's timetable data. Read-only; the model is instructed to
+never guess a schedule and to call this tool instead.
 
-### 3. `check_timetable`
+### Input
 
-- **Purpose**: Queries lecture, tutorial, lab, and examination timetable schedules for Makerere University courses or enrolled student courses.
-- **Implementation File**: [`agent-backend/tools/timetable_tool.py`](file:///c:/Users/sean/Desktop/UniveristyAgentic/university-student-support-case-agent/agent-backend/tools/timetable_tool.py)
-- **Input Schema (`CheckTimetableInput`)**:
-  - `student_id` (`str`): Student registration number or ID.
-  - `course_code` (`str | None`): Optional course code filter (e.g., `BSE4104`, `BIT2101`).
-  - `semester` (`str`): Academic semester (default `2026/2027-SEM1`).
-  - `auth_token` (`str`): Authorization token.
-- **Output Schema (`CheckTimetableOutput`)**:
-  - `success` (`bool`): Operational success flag.
-  - `student_id` (`str | None`): Student ID.
-  - `semester` (`str | None`): Queried semester.
-  - `total_found` (`int`): Count of schedule entries found.
-  - `entries` (`list[TimetableEntry]`): Array of timetable entries (`course_code`, `course_title`, `entry_type`, `day`, `start_time`, `end_time`, `venue`, `instructor`).
-  - `message` (`str`): Summary message.
-  - `error` (`str | None`): Error details if failed.
-- **Authorization**:
-  - Validates `auth_token`. Rejects invalid/expired credentials.
-- **Failure Behaviour**:
-  - If no published schedule matches the course or student, returns `success=True`, `total_found=0`, `entries=[]` with an informative message rather than failing or throwing an error.
-
----
-
-### 4. `submit_grade_appeal` (High-Impact Action — Human Approval Required)
-
-- **Purpose**: Submits a formal academic grade appeal/re-marking request to the Makerere University Senate Examinations Committee. As a high-impact academic and financial action (imposing a non-refundable 50,000 UGX fee deposit and irreversible senate review), autonomous execution by the AI agent is prohibited without explicit human approval.
-- **Implementation File**: [`agent-backend/tools/appeal_tool.py`](file:///c:/Users/sean/Desktop/UniveristyAgentic/university-student-support-case-agent/agent-backend/tools/appeal_tool.py)
-- **Input Schema (`SubmitGradeAppealInput`)**:
-  - `student_id` (`str`): Student registration number or student ID.
-  - `course_code` (`str`): Course code being appealed (e.g., `BSE4104`).
-  - `semester` (`str`): Academic semester (default: `2026/2027-SEM1`).
-  - `appeal_type` (`AppealType` Enum): `REMARKING`, `CALCULATION_CHECK`, or `SPECIAL_CIRCUMSTANCES`.
-  - `claimed_score` (`float | None`): Expected score if calculation discrepancy is claimed (0 to 100).
-  - `justification` (`str`): Detailed grounds for appeal (min 20, max 1000 chars).
-  - `confirm_fee_obligation` (`bool`): Explicit student confirmation of the 50,000 UGX deposit (must be `True`).
-  - `auth_token` (`str`): Authorization token representing student credentials.
-- **Output Schema (`SubmitGradeAppealOutput`)**:
-  - `success` (`bool`): True if grade appeal was lodged.
-  - `appeal_id` (`str | None`): Unique appeal ID (e.g. `APPL-2026-4410`).
-  - `status` (`str`): Status (`LODGED`, `PENDING_APPROVAL`, `UNAUTHORIZED`, `INVALID_INPUT`, `REJECTED`).
-  - `course_code` (`str | None`): Course code appealed.
-  - `appeal_fee_ugx` (`int | None`): 50,000 UGX deposit fee charged.
-  - `assigned_board` (`str | None`): `Makerere Senate Examinations Committee`.
-  - `created_at` (`str | None`): ISO 8601 timestamp.
-  - `message` (`str`): Human-readable outcome message.
-  - `error` (`str | None`): Error details if failed.
-- **Authorization**:
-  - Validates `auth_token`. Rejects unauthorized or expired tokens.
-- **Failure Behaviour**:
-  - Unacknowledged fee obligation or short justification (<20 chars) returns `status="INVALID_INPUT"`.
-  - Human rejection via the HITL gate returns `status="REJECTED"`, leaving the underlying tool unfired.
-
----
-
-## Human-in-the-Loop (HITL) Approval State Architecture
-
-Implemented in [`agent-backend/tools/approval.py`](file:///c:/Users/sean/Desktop/UniveristyAgentic/university-student-support-case-agent/agent-backend/tools/approval.py):
-
-```
-[Agent proposes Action: submit_grade_appeal]
-                     │
-                     ▼
-        [requires_human_approval?]
-             /                \
-          No                   Yes
-          /                      \
-   [Fire Tool]           [Pause Execution]
-                                 │
-                                 ▼
-                     [Create ApprovalRequest]
-                     (status = PENDING, APPR-XXXX)
-                                 │
-                                 ▼
-                     [Prompt Human Reviewer]
-                                 │
-                 ┌───────────────┴───────────────┐
-                 ▼                               ▼
-       Decision = APPROVE               Decision = REJECT
-                 │                               │
-                 ▼                               ▼
-            [FIRE TOOL]                  [CANCEL EXECUTION]
-   (status = APPROVED, run tool)    (status = REJECTED, no tool fired)
+```json
+{
+  "course_code": "BSE4104",
+  "date": "2026-09-24"
+}
 ```
 
+| Field | Type | Required | Validation |
+|---|---|---|---|
+| `course_code` | string | yes | Normalized to uppercase; must match `^[A-Z]{2,5}\d{3,5}$` (e.g. `BSE4104`) |
+| `date` | string | no | Must be a valid ISO date (`YYYY-MM-DD`) if supplied |
+
+### Output
+
+```json
+{
+  "success": true,
+  "course_code": "BSE4104",
+  "sessions": [
+    {"date": "2026-09-24", "start_time": "10:00", "end_time": "12:00", "venue": "Room 204"}
+  ],
+  "error": null
+}
+```
+
+On no match: `{"success": false, "course_code": "BSE4104", "sessions": [], "error": "No timetable information found for BSE4104"}`.
+
+**Data source:** `agent-backend/data/timetable/timetable.json` — synthetic, team-created data, explicitly labeled as such in the file itself (`_disclaimer` field). Not an official university feed.
+
+### Authorization
+
+`student` and `staff` may call this tool. `guest` is rejected with `"You are not authorized to use 'check_timetable'."`.
+
+### Failure behavior
+
+| Case | Behavior |
+|---|---|
+| Missing `course_code` | Pydantic validation error → `{"success": false, "error": "Invalid input for 'check_timetable': ..."}` |
+| Malformed `course_code` (e.g. empty, wrong shape) | Same as above |
+| Invalid `date` | Same as above |
+| Course not found | `{"success": false, "error": "No timetable information found for ..."}` — not a guess |
+| Timetable file missing/unreadable | Caught as a service-unavailable error: `{"success": false, "error": "The timetable service is temporarily unavailable. Please try again later."}` |
+| Malformed/unexpected tool return value | Caught by output-schema validation: `{"success": false, "error": "The 'check_timetable' tool returned an unexpected response."}` |
+
 ---
 
-## REST API Endpoints
+## Tool: `create_support_ticket`
 
-The tool and approval system is exposed via FastAPI in `agent-backend/main.py`:
+### Purpose
 
-1. **`GET /api/v1/tools`**: Returns the Tool Catalogue with full function descriptions and OpenAI/Groq compatible JSON Schemas.
-2. **`POST /api/v1/tools/execute`**: Executes any tool by name. If tool requires human approval, execution pauses and returns an approval request ID.
-3. **`POST /api/v1/approvals/request`**: Explicitly pauses execution and registers an approval request.
-4. **`GET /api/v1/approvals/pending`**: Lists all pending actions waiting for human decision.
-5. **`GET /api/v1/approvals/{approval_id}`**: Retrieves approval status, details, and review notes.
-6. **`POST /api/v1/approvals/{approval_id}/decide`**: Processes human decision (`APPROVE` or `REJECT`). Fires the target tool only upon approval!
+Create a **draft** support ticket (`status: PENDING_APPROVAL`) from a student's described problem. This is a deliberately low-risk, simulated side effect: it never submits, resolves, or acts on the request — only a human calling the separate approval endpoint can do that.
+
+### Input
+
+```json
+{
+  "category": "IT Support",
+  "subject": "Unable to access student portal",
+  "description": "The student portal is rejecting my login."
+}
+```
+
+| Field | Type | Required | Validation |
+|---|---|---|---|
+| `category` | string | yes | Must be one of `IT Support`, `Academic`, `Finance`, `Other` |
+| `subject` | string | yes | Non-empty, ≤200 chars |
+| `description` | string | yes | Non-empty, ≤2000 chars |
+
+### Output
+
+```json
+{
+  "success": true,
+  "ticket_id": "DRAFT-001",
+  "status": "PENDING_APPROVAL",
+  "category": "IT Support",
+  "subject": "Unable to access student portal",
+  "error": null
+}
+```
+
+**Storage:** SQLite (`agent-backend/data/tickets.db`, stdlib `sqlite3`, no new dependency) — chosen per the brief's guidance for a bounded Week 4 demonstration rather than introducing new infrastructure.
+
+### Authorization
+
+`student` and `staff` may create a draft (for the current bounded demo, any authenticated actor may create their own draft). `guest` is rejected the same way as `check_timetable`.
+
+**Approving or rejecting a ticket is a completely separate action, never exposed to the model as a tool at all** — see the endpoints below.
+
+### Failure behavior
+
+| Case | Behavior |
+|---|---|
+| Missing `category`/`subject`/`description` | Validation error → `{"success": false, "error": "Invalid input for 'create_support_ticket': ..."}` |
+| Invalid `category` (not in the allowed list) | Same as above |
+| Blank subject/description (whitespace-only) | Same as above |
+| Database unavailable | `{"success": false, "error": "The support ticket service is temporarily unavailable. Please try again later."}` |
+| Malformed/unexpected tool return value | `{"success": false, "error": "The 'create_support_ticket' tool returned an unexpected response."}` |
 
 ---
 
-## Verification & Test Suite
+## Ticket approval (human-only, not a tool)
 
-Automated tests in `agent-backend/tests/` verify:
-- ✅ **`tests/test_tools.py`**: Execution, validation, authorization, and fallbacks for standard tools (13 tests).
-- ✅ **`tests/test_approval.py`**: Grade appeal validation, execution pause, human approval firing, and rejection blocking (6 tests).
-- ✅ **`demo_tools.py`**: Live terminal demo proving pause, prompt, and conditional tool firing.
+These are plain authenticated HTTP endpoints in `main.py` — the model has no path to call them.
 
+| Endpoint | Method | Authorization | Effect |
+|---|---|---|---|
+| `/api/v1/support-tickets/{ticket_id}` | GET | any | Returns the ticket's current record |
+| `/api/v1/support-tickets/{ticket_id}/approve` | POST | `staff` only (else `403 Forbidden`) | `PENDING_APPROVAL` → `SUBMITTED` |
+| `/api/v1/support-tickets/{ticket_id}/reject` | POST | `staff` only (else `403 Forbidden`) | `PENDING_APPROVAL` → `REJECTED` |
+
+State-transition failure behavior (both endpoints, same underlying logic in `tools/tickets.py`):
+
+| Case | Behavior |
+|---|---|
+| Ticket does not exist | `{"success": false, "error": "Ticket '...' was not found."}` |
+| Ticket already `SUBMITTED` or `REJECTED` | `{"success": false, "error": "Ticket '...' is already ...; its state cannot be changed."}` |
+| Valid `PENDING_APPROVAL` ticket, authorized caller | `{"success": true, "ticket_id": "...", "status": "SUBMITTED"/"REJECTED"}` |
+
+---
+
+## Bounded tool-calling loop
+
+`llm/service.py`'s `_run_tool_calling_loop` enforces `MAX_TOOL_CALLS` (default 3, env `MAX_TOOL_CALLS`) two ways: it stops *requesting* new tool calls from the model once the bound is reached (`tool_choice="none"`), and — defensively, in case a provider or a bug ignores that — it will not *execute* more than the bound regardless of what the model asks for. The whole loop is also capped at a small, finite number of round-trips, so a request can never hang indefinitely waiting on the model to produce a final answer.

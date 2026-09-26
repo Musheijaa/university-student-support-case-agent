@@ -96,28 +96,32 @@ This prototype intentionally excludes:
 - `docs/model-selection.md` — Week 2: why an external foundation-model API was chosen
 - `docs/prompt-specification.md` — Week 2: versioned prompt specification (V1.0, V2.0)
 - `docs/prompt-evaluation.md` — Week 2: prompt evaluation test cases and results
+- `docs/corpus-source-register.md`, `docs/rag-architecture.md`, `docs/rag-evaluation.md`, `docs/rag-failures.md` — Week 3: RAG corpus, architecture, evaluation, and documented failures
+- `docs/architecture.md` — Week 4: current system architecture and the Week 2→3→4 progression
+- `docs/tool-catalogue.md` — Week 4: tool schemas, authorization, and failure behavior
+- `docs/tool-test-evidence.md` — Week 4: real test results for every failure/authorization scenario
 - `prompts/` — prompt and workflow notes
 - `knowledge/` — approved project knowledge sources
 - `agent-backend/` — FastAPI backend and LLM integration (see `agent-backend/README.md`); includes `agent-backend/tests/`
-- `frontend/` — React (Vite) dashboard scaffold; no application code implemented yet
+- `frontend/` — React (Vite) minimal test console: chat UI with source/timetable/ticket rendering and staff approve/reject controls
 - `evidence/` — screenshots and traces
 - `demo/` — demonstration materials
 
 ## Development Status
-Week 1 planning and requirement framing are complete and documented in the repository. Week 2 added a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response. Week 3 adds retrieval-augmented generation (RAG): the same endpoint now answers from a controlled corpus of Makerere University policy documents (`docs/makerereUniversityPolicyDocs/`), returning the sources each answer is grounded in. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
+Week 1 planning and requirement framing are complete and documented in the repository. Week 2 added a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response. Week 3 added retrieval-augmented generation (RAG): the same endpoint answers from a controlled corpus of Makerere University policy documents (`docs/makerereUniversityPolicyDocs/`), returning the sources each answer is grounded in. Week 4 adds explicit tool calling: the model can request a `check_timetable` or `create_support_ticket` tool, executed by the application (never the model) after validation and authorization, with ticket submission requiring a separate human-approval step. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
 
-## Week 2/3: Running the Backend
+## Week 2/3/4: Running the Backend
 
 The backend is a FastAPI app in `agent-backend/` (flat layout —
-`main.py` sits directly in that folder, not nested under `src/`) with two
-endpoints:
+`main.py` sits directly in that folder, not nested under `src/`) with:
 
 - `GET /health` — liveness check, independent of the LLM provider.
-- `POST /api/v1/student-support` — retrieves relevant evidence from the ingested policy corpus, builds a grounded prompt (see `agent-backend/llm/prompts.py` and `docs/prompt-specification.md`), sends it to Groq, and returns the answer plus the sources it was grounded in.
+- `POST /api/v1/student-support` — retrieves relevant evidence from the ingested policy corpus, offers the model `check_timetable`/`create_support_ticket` tools (see `docs/tool-catalogue.md`), and returns the answer plus sources and any tool calls made.
+- `GET /api/v1/support-tickets/{id}` and `POST .../approve` / `.../reject` — staff-only ticket approval, never reachable by the model itself.
 
-It intentionally does **not** yet include tools/function calling, case memory, or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
+It intentionally does **not** yet include case memory or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
 
-A `frontend/` folder holds a scaffolded React (Vite) dashboard — dependencies installed, no application code written yet. See [Frontend scaffold](#frontend-scaffold) below.
+A `frontend/` folder holds a minimal React (Vite) test console — a chat UI that renders sources, timetable results, and support-ticket drafts (with staff approve/reject controls). See [Frontend](#frontend) below.
 
 ### 1. Clone the project
 
@@ -203,15 +207,21 @@ Run from inside `agent-backend/`:
 pytest -v
 ```
 
-## Frontend scaffold
+## Frontend
 
-`frontend/` is a React app scaffolded with Vite (`npm create vite@latest frontend -- --template react`). Only dependencies are installed — no dashboard UI has been implemented yet; that begins in a later week.
+`frontend/` is a minimal React (Vite) test console for the backend above — not a polished student-facing app, just enough UI to see and test what the backend does. It supports:
+
+- A backend-URL field, a role selector (`student`/`staff`/`guest`, sent as `X-User-Role`), and a live health-check dot.
+- A chat box that shows the model's grounded answer (rendered from the small subset of markdown the prompts actually produce — bold, lists, tables), its `sources`, and any tool calls.
+- `check_timetable` results as a real table; `create_support_ticket` results as a draft card with **Approve**/**Reject** buttons, shown only when the selected role is `staff`.
 
 ```bash
 cd frontend
 npm install   # already done; re-run only if node_modules is missing
-npm run dev   # starts the Vite dev server to confirm the scaffold runs
+npm run dev   # starts the Vite dev server at http://localhost:5173
 ```
+
+The backend must be running separately (see above) with CORS enabled for local development (already configured in `main.py`). Point the "Backend URL" field at wherever `uvicorn` is listening (e.g. `http://127.0.0.1:8001` if port 8000 is taken).
 
 The test suite mocks the Groq API boundary, so it runs without a real API key. A separate, explicitly-opt-in real-API test (`tests/test_integration_groq.py`) is skipped unless `GROQ_API_KEY` is configured.
 

@@ -7,6 +7,7 @@ requires changes here.
 """
 
 import logging
+from typing import Any
 
 import groq
 
@@ -32,16 +33,43 @@ class GroqClient:
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         """Send a system/user message pair to Groq and return the reply text."""
+        message = self.create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+        )
+        content = message.content
+        if content is None or not content.strip():
+            raise LLMRequestError("The model provider returned an empty response.")
+        return content.strip()
+
+    def create_completion(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
+    ):
+        """Send a full message list (optionally with tool definitions) to Groq.
+
+        Returns the raw assistant message object (`.content`, `.tool_calls`)
+        so callers can implement a tool-calling loop. Kept separate from
+        `generate()` so plain prompt/response callers (V1.0/V2.0/RAG) don't
+        need to know about tool calling at all.
+        """
+        kwargs: dict[str, Any] = {
+            "model": self._model,
+            "messages": messages,
+            "temperature": 0.2,
+            "max_tokens": 1500,
+        }
+        if tools is not None:
+            kwargs["tools"] = tools
+        if tool_choice is not None:
+            kwargs["tool_choice"] = tool_choice
+
         try:
-            completion = self._client.chat.completions.create(
-                model=self._model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                temperature=0.2,
-                max_tokens=800,
-            )
+            completion = self._client.chat.completions.create(**kwargs)
         except groq.APITimeoutError as exc:
             logger.warning("Groq API request timed out.")
             raise LLMRequestError("The model provider timed out. Please try again.") from exc
@@ -65,8 +93,4 @@ class GroqClient:
         if not completion.choices:
             raise LLMRequestError("The model provider returned an empty response.")
 
-        content = completion.choices[0].message.content
-        if content is None or not content.strip():
-            raise LLMRequestError("The model provider returned an empty response.")
-
-        return content.strip()
+        return completion.choices[0].message
