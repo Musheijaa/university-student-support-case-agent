@@ -26,7 +26,7 @@ def test_valid_student_message(monkeypatch):
         prompt_version="v2.0",
         model="openai/gpt-oss-20b",
     )
-    monkeypatch.setattr(main_module, "get_student_support_response", lambda message: fake_result)
+    monkeypatch.setattr(main_module, "get_student_support_response", lambda message, **kwargs: fake_result)
 
     response = client.post(
         "/api/v1/student-support",
@@ -69,7 +69,7 @@ def test_message_with_surrounding_whitespace_is_accepted(monkeypatch):
         prompt_version="v2.0",
         model="openai/gpt-oss-20b",
     )
-    monkeypatch.setattr(main_module, "get_student_support_response", lambda message: fake_result)
+    monkeypatch.setattr(main_module, "get_student_support_response", lambda message, **kwargs: fake_result)
 
     response = client.post(
         "/api/v1/student-support",
@@ -89,7 +89,7 @@ def test_message_with_newlines_is_accepted(monkeypatch):
         prompt_version="v2.0",
         model="openai/gpt-oss-20b",
     )
-    monkeypatch.setattr(main_module, "get_student_support_response", lambda message: fake_result)
+    monkeypatch.setattr(main_module, "get_student_support_response", lambda message, **kwargs: fake_result)
 
     response = client.post(
         "/api/v1/student-support",
@@ -98,7 +98,7 @@ def test_message_with_newlines_is_accepted(monkeypatch):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body.keys()) == {"response", "prompt_version", "model", "sources"}
+    assert set(body.keys()) == {"response", "prompt_version", "model", "sources", "tool_calls"}
 
 
 def test_excessively_long_message():
@@ -122,7 +122,7 @@ def test_unknown_route_returns_404():
 
 
 def test_missing_api_configuration(monkeypatch):
-    def raise_configuration_error(message):
+    def raise_configuration_error(message, **kwargs):
         raise LLMConfigurationError("GROQ_API_KEY is not configured.")
 
     monkeypatch.setattr(main_module, "get_student_support_response", raise_configuration_error)
@@ -138,7 +138,7 @@ def test_missing_api_configuration(monkeypatch):
 
 
 def test_llm_request_error_returns_bad_gateway(monkeypatch):
-    def raise_request_error(message):
+    def raise_request_error(message, **kwargs):
         raise LLMRequestError("The model provider timed out. Please try again.")
 
     monkeypatch.setattr(main_module, "get_student_support_response", raise_request_error)

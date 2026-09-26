@@ -1,0 +1,47 @@
+{
+  "_disclaimer": "SYNTHETIC / TEAM-CREATED DATA. Not an official Makerere University timetable. Created only to demonstrate the Week 4 check_timetable tool.",
+  "sessions": [
+    {
+      "course_code": "BSE4104",
+      "date": "2026-09-24",
+      "start_time": "10:00",
+      "end_time": "12:00",
+      "venue": "Room 204"
+    },
+    {
+      "course_code": "BSE4104",
+      "date": "2026-10-01",
+      "start_time": "10:00",
+      "end_time": "12:00",
+      "venue": "Room 204"
+    },
+    {
+      "course_code": "BSE4104",
+      "date": "2026-10-08",
+      "start_time": "10:00",
+      "end_time": "12:00",
+      "venue": "Room 204"
+    },
+    {
+      "course_code": "CSC3103",
+      "date": "2026-09-25",
+      "start_time": "08:00",
+      "end_time": "10:00",
+      "venue": "Lecture Hall 3"
+    },
+    {
+      "course_code": "CSC3103",
+      "date": "2026-10-02",
+      "start_time": "08:00",
+      "end_time": "10:00",
+      "venue": "Lecture Hall 3"
+    },
+    {
+      "course_code": "BIT2201",
+      "date": "2026-09-26",
+      "start_time": "14:00",
+      "end_time": "16:00",
+      "venue": "Computer Lab 2"
+    }
+  ]
+}

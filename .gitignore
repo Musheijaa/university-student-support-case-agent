@@ -26,7 +26,10 @@ Thumbs.db
 htmlcov/
 
 # RAG vector index (regenerable via `python ingest.py`; not source)
-agent-backend/data/
+agent-backend/data/chroma/
+
+# Ticket store (runtime state, not source)
+agent-backend/data/tickets.db
 
 # Node / frontend
 node_modules/
