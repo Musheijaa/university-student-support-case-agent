@@ -239,3 +239,4 @@ This repository demonstrates a professional Week 1 capstone foundation for a bou
 
 ## License and Safety Note
 This repository is for academic and project demonstration purposes only. It does not contain real credentials, secrets, protected academic records, or production user data.
+Added this
