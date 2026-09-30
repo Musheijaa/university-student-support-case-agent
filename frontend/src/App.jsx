@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { askStudentSupport, checkHealth } from './api'
+import { askAgentSupport, askStudentSupport, checkHealth } from './api'
+import AgentStepsCard from './AgentStepsCard'
 import renderMarkdown from './markdown'
 import TicketCard from './TicketCard'
 import TimetableCard from './TimetableCard'
@@ -24,7 +25,8 @@ export default function App() {
   const [baseUrl, setBaseUrl] = useState(saved.baseUrl || 'http://127.0.0.1:8000')
   const [role, setRole] = useState(saved.role || 'student')
   const [userId, setUserId] = useState(saved.userId || 'demo-student')
-  const [health, setHealth] = useState('unknown') // 'ok' | 'down' | 'unknown'
+  const [mode, setMode] = useState(saved.mode || 'w4') // 'w4' | 'w5'
+  const [health, setHealth] = useState('unknown')
 
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -32,17 +34,15 @@ export default function App() {
   const transcriptEndRef = useRef(null)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ baseUrl, role, userId }))
-  }, [baseUrl, role, userId])
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ baseUrl, role, userId, mode }))
+  }, [baseUrl, role, userId, mode])
 
   useEffect(() => {
     let cancelled = false
     checkHealth(baseUrl)
       .then(() => !cancelled && setHealth('ok'))
       .catch(() => !cancelled && setHealth('down'))
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [baseUrl])
 
   useEffect(() => {
@@ -60,19 +60,40 @@ export default function App() {
     setLoading(true)
 
     try {
-      const result = await askStudentSupport(baseUrl, question, role, userId)
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextMessageId++,
-          role: 'assistant',
-          text: result.response,
-          promptVersion: result.prompt_version,
-          model: result.model,
-          sources: result.sources || [],
-          toolCalls: result.tool_calls || [],
-        },
-      ])
+      if (mode === 'w5') {
+        // --- Week 5 agent endpoint ---
+        const result = await askAgentSupport(baseUrl, question, role, userId)
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextMessageId++,
+            role: 'assistant',
+            mode: 'w5',
+            text: result.response,
+            agentResult: result,
+            // also expose tool_calls so existing TicketCard/TimetableCard still render
+            toolCalls: (result.steps || [])
+              .filter((s) => s.decision === 'tool_call' && s.tool_result)
+              .map((s) => ({ tool: s.tool_name, result: s.tool_result })),
+          },
+        ])
+      } else {
+        // --- Week 4 endpoint (unchanged) ---
+        const result = await askStudentSupport(baseUrl, question, role, userId)
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextMessageId++,
+            role: 'assistant',
+            mode: 'w4',
+            text: result.response,
+            promptVersion: result.prompt_version,
+            model: result.model,
+            sources: result.sources || [],
+            toolCalls: result.tool_calls || [],
+          },
+        ])
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -108,6 +129,13 @@ export default function App() {
             User ID
             <input value={userId} onChange={(e) => setUserId(e.target.value)} />
           </label>
+          <label>
+            Mode
+            <select value={mode} onChange={(e) => { setMode(e.target.value); setMessages([]) }}>
+              <option value="w4">Week 4 — RAG + Tools</option>
+              <option value="w5">Week 5 — Agent</option>
+            </select>
+          </label>
           <span className={`health-dot health-${health}`} title={`Backend: ${health}`} />
         </div>
       </header>
@@ -115,10 +143,9 @@ export default function App() {
       <main className="transcript">
         {messages.length === 0 && (
           <p className="empty-hint">
-            Ask a knowledge question (grounded in the policy corpus), a timetable question
-            (e.g. "When is BSE4104 scheduled?"), or describe a problem (e.g. "I can't access
-            the student portal") to see a support-ticket draft. Switch role to "staff" above
-            to approve or reject a resulting ticket.
+            {mode === 'w5'
+              ? 'Week 5 Agent mode — every response shows the full execution trace (iterations, tool calls, observations). Try: "When is BSE4104 scheduled?" or "I can\'t log in to the portal."'
+              : 'Ask a knowledge question (grounded in the policy corpus), a timetable question (e.g. "When is BSE4104 scheduled?"), or describe a problem (e.g. "I can\'t access the student portal") to see a support-ticket draft. Switch role to "staff" above to approve or reject a resulting ticket.'}
           </p>
         )}
         {messages.map((message) => (
@@ -132,7 +159,7 @@ export default function App() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your question…"
+          placeholder={mode === 'w5' ? 'Ask the agent…' : 'Type your question…'}
           disabled={loading}
         />
         <button type="submit" disabled={loading || !input.trim()}>
@@ -154,8 +181,11 @@ function MessageBubble({ message, baseUrl, role, userId }) {
 
   return (
     <div className="bubble assistant">
-      <div className="response-text">{renderMarkdown(message.text)}</div>
+      {message.text && (
+        <div className="response-text">{renderMarkdown(message.text)}</div>
+      )}
 
+      {/* Tool cards — shared between w4 and w5 */}
       {message.toolCalls?.length > 0 && (
         <div className="tool-calls">
           {message.toolCalls.map((call, i) =>
@@ -178,6 +208,12 @@ function MessageBubble({ message, baseUrl, role, userId }) {
         </div>
       )}
 
+      {/* Week 5: agent execution trace */}
+      {message.mode === 'w5' && message.agentResult && (
+        <AgentStepsCard agentResult={message.agentResult} />
+      )}
+
+      {/* Week 4: sources */}
       {message.sources?.length > 0 && (
         <div className="sources">
           <div className="sources-title">Sources</div>
@@ -191,9 +227,16 @@ function MessageBubble({ message, baseUrl, role, userId }) {
         </div>
       )}
 
-      <div className="meta">
-        {message.promptVersion} · {message.model}
-      </div>
+      {message.promptVersion && (
+        <div className="meta">
+          {message.promptVersion} · {message.model}
+        </div>
+      )}
+      {message.mode === 'w5' && message.agentResult && (
+        <div className="meta">
+          agent · {message.agentResult.status}
+        </div>
+      )}
     </div>
   )
 }
