@@ -41,6 +41,16 @@ export function askStudentSupport(baseUrl, message, role, userId) {
   )
 }
 
+export function askAgentSupport(baseUrl, message, role, userId) {
+  return request(
+    baseUrl,
+    '/api/v1/agent/student-support',
+    { method: 'POST', body: JSON.stringify({ message }) },
+    role,
+    userId,
+  )
+}
+
 export function approveTicket(baseUrl, ticketId, role, userId) {
   return request(
     baseUrl,
