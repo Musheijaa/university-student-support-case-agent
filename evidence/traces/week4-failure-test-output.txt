@@ -1,0 +1,61 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /home/akakikunda-bonitah/Documents/emerging_trends/university-student-support-case-agent/agent-backend/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/akakikunda-bonitah/Documents/emerging_trends/university-student-support-case-agent/agent-backend
+plugins: anyio-4.15.1
+collecting ... collected 46 items
+
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_001_check_timetable_empty_args PASSED [  2%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_002_check_timetable_empty_course_code PASSED [  4%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_003_check_timetable_whitespace_course_code PASSED [  6%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_004_check_timetable_malformed_course_code PASSED [  8%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_005_check_timetable_invalid_date PASSED [ 10%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_006_check_timetable_extra_unknown_fields PASSED [ 13%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_007_create_ticket_missing_category PASSED [ 15%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_008_create_ticket_missing_subject PASSED [ 17%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_009_create_ticket_missing_description PASSED [ 19%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_010_create_ticket_all_fields_missing PASSED [ 21%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_011_create_ticket_invalid_category PASSED [ 23%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_012_create_ticket_blank_subject PASSED [ 26%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_013_create_ticket_oversized_subject PASSED [ 28%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_014_create_ticket_oversized_description PASSED [ 30%]
+tests/test_tool_failure_handling.py::TestMissingRequiredParameters::test_missing_param_015_end_to_end_missing_arg_reported_to_model PASSED [ 32%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_001_timetable_file_missing PASSED [ 34%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_002_timetable_file_malformed_json PASSED [ 36%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_003_timetable_file_missing_sessions_key PASSED [ 39%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_004_ticket_db_path_nonexistent_dir PASSED [ 41%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_005_ticket_db_sqlite_error PASSED [ 43%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_006_executor_raises_generic_exception PASSED [ 45%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_007_provider_timeout_propagates_as_502 PASSED [ 47%]
+tests/test_tool_failure_handling.py::TestUnavailableServices::test_service_fail_008_provider_config_error_propagates_as_503 PASSED [ 50%]
+tests/test_tool_failure_handling.py::TestUnexpectedToolResponses::test_unexpected_resp_001_executor_returns_string PASSED [ 52%]
+tests/test_tool_failure_handling.py::TestUnexpectedToolResponses::test_unexpected_resp_002_executor_returns_dict_missing_required_field PASSED [ 54%]
+tests/test_tool_failure_handling.py::TestUnexpectedToolResponses::test_unexpected_resp_003_executor_returns_none PASSED [ 56%]
+tests/test_tool_failure_handling.py::TestUnexpectedToolResponses::test_unexpected_resp_004_executor_returns_dict_with_wrong_types PASSED [ 58%]
+tests/test_tool_failure_handling.py::TestUnexpectedToolResponses::test_unexpected_resp_005_executor_returns_malformed_json_string PASSED [ 60%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_001_unknown_role_rejected_at_dispatch PASSED [ 63%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_002_guest_cannot_create_ticket_through_dispatch PASSED [ 65%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_003_guest_rejected_for_both_tools PASSED [ 67%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_004_guest_actor_in_tool_calling_loop PASSED [ 69%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_005_invalid_role_header_defaults_to_guest PASSED [ 71%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_006_student_cannot_approve_ticket PASSED [ 73%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_007_student_cannot_reject_ticket PASSED [ 76%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_008_guest_cannot_approve_or_reject PASSED [ 78%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_009_missing_role_header_defaults_to_student_rejected PASSED [ 80%]
+tests/test_tool_failure_handling.py::TestUnauthorizedRequests::test_unauth_010_staff_can_approve_ticket_unauthorized_context PASSED [ 82%]
+tests/test_ticket_approval_api.py::test_staff_can_approve_a_pending_ticket PASSED [ 84%]
+tests/test_ticket_approval_api.py::test_student_cannot_approve_a_ticket PASSED [ 86%]
+tests/test_ticket_approval_api.py::test_missing_role_header_defaults_to_student_and_is_forbidden PASSED [ 89%]
+tests/test_ticket_approval_api.py::test_staff_can_reject_a_pending_ticket PASSED [ 91%]
+tests/test_ticket_approval_api.py::test_approving_an_already_approved_ticket_fails PASSED [ 93%]
+tests/test_ticket_approval_api.py::test_approving_a_nonexistent_ticket_fails PASSED [ 95%]
+tests/test_ticket_approval_api.py::test_get_ticket_returns_current_state PASSED [ 97%]
+tests/test_ticket_approval_api.py::test_get_nonexistent_ticket_is_404 PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/akakikunda-bonitah/Documents/emerging_trends/university-student-support-case-agent/agent-backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 46 passed, 1 warning in 2.65s =========================
