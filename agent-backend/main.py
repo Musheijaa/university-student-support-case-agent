@@ -3,6 +3,7 @@
 Exposes:
   GET  /health                                        - liveness check, independent of the LLM provider
   POST /api/v1/student-support                        - RAG-grounded, tool-using student-support interaction
+  POST /api/v1/agent/student-support                  - Week 5: bounded agent run with a full execution trace
   GET  /api/v1/support-tickets/{ticket_id}             - read a ticket's current state
   POST /api/v1/support-tickets/{ticket_id}/approve     - staff-only: PENDING_APPROVAL -> SUBMITTED
   POST /api/v1/support-tickets/{ticket_id}/reject      - staff-only: PENDING_APPROVAL -> REJECTED
@@ -15,10 +16,13 @@ has no path to submit or approve a ticket itself.
 """
 
 import logging
+from dataclasses import asdict
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from agent.contract import build_contract
+from agent.orchestrator import AGENT_PROMPT_VERSION, run_agent
 from auth import Actor, get_actor
 from config import get_settings
 from llm.service import (
@@ -27,6 +31,8 @@ from llm.service import (
     get_student_support_response,
 )
 from schemas import (
+    AgentRunResponse,
+    AgentStepResponse,
     HealthResponse,
     SourceResponse,
     StudentSupportRequest,
@@ -103,6 +109,48 @@ def student_support(
         tool_calls=[
             ToolCallResponse(tool=t.tool, arguments=t.arguments, result=t.result)
             for t in result.tool_calls
+        ],
+    )
+
+
+@app.post(
+    "/api/v1/agent/student-support",
+    response_model=AgentRunResponse,
+    tags=["agent"],
+)
+def agent_student_support(
+    payload: StudentSupportRequest, actor: Actor = Depends(get_actor)
+) -> AgentRunResponse:
+    settings = get_settings()
+    try:
+        state = run_agent(payload.message, settings=settings, actor=actor)
+    except LLMConfigurationError as exc:
+        logger.error("LLM configuration error: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The student-support assistant is not configured. Please contact an administrator.",
+        ) from exc
+
+    contract = build_contract(settings)
+    logger.info(
+        "Agent run %s finished: status=%s iterations=%d tool_calls=%d",
+        state.run_id, state.status, state.iteration_count, state.tool_call_count,
+    )
+    return AgentRunResponse(
+        run_id=state.run_id,
+        status=state.status,
+        response=state.response,
+        plan=state.plan,
+        iteration_count=state.iteration_count,
+        tool_call_count=state.tool_call_count,
+        max_iterations=contract.max_iterations,
+        max_tool_calls=contract.max_tool_calls,
+        prompt_version=AGENT_PROMPT_VERSION,
+        model=settings.groq_model,
+        steps=[AgentStepResponse(**asdict(step)) for step in state.steps],
+        sources=[
+            SourceResponse(document_id=s.document_id, document=s.document, page=s.page)
+            for s in state.sources
         ],
     )
 

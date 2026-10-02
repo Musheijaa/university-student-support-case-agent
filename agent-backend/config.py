@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     timetable_data_path: str = "data/timetable/timetable.json"
     tickets_db_path: str = "data/tickets.db"
 
+    # Week 5: bounded agent (see docs/agent-task-contract.md). The agent's
+    # tool budget is max_tool_calls above.
+    agent_max_iterations: int = 4
+
     @property
     def groq_configured(self) -> bool:
         return bool(self.groq_api_key.strip())

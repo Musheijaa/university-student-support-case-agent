@@ -196,11 +196,35 @@ PROMPT_TOOLS = PromptTemplate(
 )
 
 
+# ---------------------------------------------------------------------------
+# Prompt AGENT-v1.0 - Week 5: the tools prompt, plus the bounded-agent rules
+# ---------------------------------------------------------------------------
+
+_AGENT_SYSTEM_PROMPT = _TOOLS_SYSTEM_PROMPT + """
+
+You are running as a bounded agent with a limited number of steps.
+Decide the single most useful next action: answer from the evidence,
+call one of your tools, or explain that you cannot help. After each
+tool result, re-plan: if the result answers the request, give your
+final answer; if a tool failed, tell the student plainly rather than
+retrying the same call. Only call create_support_ticket once per
+request. If a student asks you to approve, submit, or resolve a
+ticket, explain that only staff can do that - you have no such tool."""
+
+
+PROMPT_AGENT = PromptTemplate(
+    version="agent-v1.0",
+    system_prompt=_AGENT_SYSTEM_PROMPT,
+    build_user_prompt=_build_rag_user_prompt,
+)
+
+
 PROMPTS: dict[str, PromptTemplate] = {
     PROMPT_V1.version: PROMPT_V1,
     PROMPT_V2.version: PROMPT_V2,
     PROMPT_RAG.version: PROMPT_RAG,
     PROMPT_TOOLS.version: PROMPT_TOOLS,
+    PROMPT_AGENT.version: PROMPT_AGENT,
 }
 
 

@@ -65,3 +65,28 @@ class TicketDetailResponse(BaseModel):
     status: str
     created_at: str
     updated_at: str
+
+
+class AgentStepResponse(BaseModel):
+    iteration: int
+    decision: str
+    tool_name: str | None = None
+    tool_arguments: dict | None = None
+    tool_result: dict | None = None
+    observation: str | None = None
+    error: str | None = None
+
+
+class AgentRunResponse(BaseModel):
+    run_id: str
+    status: str
+    response: str
+    plan: str
+    iteration_count: int
+    tool_call_count: int
+    max_iterations: int
+    max_tool_calls: int
+    prompt_version: str
+    model: str
+    steps: list[AgentStepResponse] = []
+    sources: list[SourceResponse] = []
