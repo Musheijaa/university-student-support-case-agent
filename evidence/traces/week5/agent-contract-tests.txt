@@ -1,0 +1,27 @@
+# Agent Task Contract tests - captured 2026-10-02T14:58:27Z
+# Command: python -m pytest tests/test_agent_orchestrator.py -v   (then the full suite)
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- .venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/musheija-abaham/Desktop/AI-NATIVE & AGENTIC ENGINEERING/agent-backend
+plugins: anyio-4.15.1
+collecting ... collected 12 items
+
+tests/test_agent_orchestrator.py::test_contract_approved_tools_are_exactly_the_week4_allow_list PASSED [  8%]
+tests/test_agent_orchestrator.py::test_direct_answer_completes_without_tools PASSED [ 16%]
+tests/test_agent_orchestrator.py::test_timetable_tool_then_answer_completes PASSED [ 25%]
+tests/test_agent_orchestrator.py::test_ticket_draft_stops_for_human_approval PASSED [ 33%]
+tests/test_agent_orchestrator.py::test_unapproved_tool_is_never_executed PASSED [ 41%]
+tests/test_agent_orchestrator.py::test_tool_budget_exhausted_stops_safely PASSED [ 50%]
+tests/test_agent_orchestrator.py::test_iteration_budget_exhausted_stops_safely PASSED [ 58%]
+tests/test_agent_orchestrator.py::test_llm_failure_stops_with_safe_message PASSED [ 66%]
+tests/test_agent_orchestrator.py::test_failed_tool_is_observed_and_agent_replans PASSED [ 75%]
+tests/test_agent_orchestrator.py::test_guest_role_tool_request_is_refused_by_dispatch PASSED [ 83%]
+tests/test_agent_orchestrator.py::test_agent_endpoint_returns_full_trace PASSED [ 91%]
+tests/test_agent_orchestrator.py::test_agent_endpoint_503_when_groq_not_configured PASSED [100%]
+
+============================== 12 passed in 2.83s ==============================
+
+# Full suite:
+138 passed in 7.87s

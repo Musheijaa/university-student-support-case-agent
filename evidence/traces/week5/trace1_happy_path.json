@@ -1,0 +1,105 @@
+{
+  "scenario": "trace1_happy_path",
+  "description": "Timetable question: one tool call, then a final answer.",
+  "captured_at": "2026-10-02T14:25:37+00:00",
+  "request": {
+    "message": "When is BSE4104 scheduled?",
+    "role": "student"
+  },
+  "response": {
+    "run_id": "42d9d5c9-4484-48dd-a436-9a76f87ad2ea",
+    "status": "completed",
+    "response": "**BSE4104** meets on the following dates:\n\n| Date | Time | Venue |\n|------|------|-------|\n| 24 Sep 2026 | 10:00 – 12:00 | Room 204 |\n| 01 Oct 2026 | 10:00 – 12:00 | Room 204 |\n| 08 Oct 2026 | 10:00 – 12:00 | Room 204 |\n\nThese are the scheduled sessions for the course.",
+    "plan": "0 evidence source(s) retrieved; approved tools: check_timetable, create_support_ticket; budget: 4 iteration(s), 3 tool call(s).",
+    "iteration_count": 2,
+    "tool_call_count": 1,
+    "max_iterations": 4,
+    "max_tool_calls": 3,
+    "prompt_version": "agent-v1.0",
+    "model": "openai/gpt-oss-20b",
+    "steps": [
+      {
+        "iteration": 1,
+        "decision": "tool_call",
+        "tool_name": "check_timetable",
+        "tool_arguments": {
+          "course_code": "BSE4104"
+        },
+        "tool_result": {
+          "success": true,
+          "course_code": "BSE4104",
+          "sessions": [
+            {
+              "date": "2026-09-24",
+              "start_time": "10:00",
+              "end_time": "12:00",
+              "venue": "Room 204"
+            },
+            {
+              "date": "2026-10-01",
+              "start_time": "10:00",
+              "end_time": "12:00",
+              "venue": "Room 204"
+            },
+            {
+              "date": "2026-10-08",
+              "start_time": "10:00",
+              "end_time": "12:00",
+              "venue": "Room 204"
+            }
+          ],
+          "error": null
+        },
+        "observation": "Found 3 timetable session(s) for BSE4104.",
+        "error": null
+      },
+      {
+        "iteration": 2,
+        "decision": "final_answer",
+        "tool_name": null,
+        "tool_arguments": null,
+        "tool_result": null,
+        "observation": "Model produced a final answer.",
+        "error": null
+      }
+    ],
+    "sources": []
+  },
+  "contract_checks": [
+    {
+      "check": "Terminal status",
+      "passed": true,
+      "detail": "status = 'completed'"
+    },
+    {
+      "check": "Expected stop path",
+      "passed": true,
+      "detail": "expected one of ['completed']"
+    },
+    {
+      "check": "Has run_id",
+      "passed": true,
+      "detail": "42d9d5c9-4484-48dd-a436-9a76f87ad2ea"
+    },
+    {
+      "check": "Every step has a known decision",
+      "passed": true,
+      "detail": "2 step(s)"
+    },
+    {
+      "check": "Only approved tools executed",
+      "passed": true,
+      "detail": "tools used: ['check_timetable']"
+    },
+    {
+      "check": "tool_call_count matches trace",
+      "passed": true,
+      "detail": "1 reported vs 1 in steps"
+    },
+    {
+      "check": "iteration_count matches trace",
+      "passed": true,
+      "detail": "2 reported"
+    }
+  ]
+}

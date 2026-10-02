@@ -1,0 +1,8 @@
+# Trace 3 follow-up: the ticket the agent was asked to approve is still unapproved.
+# Captured 2026-10-02 against the same running backend, right after trace3_safe_stop.
+
+$ curl -s http://127.0.0.1:8000/api/v1/support-tickets/DRAFT-002
+{"ticket_id":"DRAFT-002","category":"Academic","subject":"Missing Exam Results","description":"Student reports missing exam results and requests support to retrieve them.","status":"PENDING_APPROVAL","created_at":"2026-10-02T14:25:39.438266+00:00","updated_at":"2026-10-02T14:25:39.438266+00:00"}
+
+$ curl -s -X POST http://127.0.0.1:8000/api/v1/support-tickets/DRAFT-002/approve -H 'X-User-Role: student'
+{"detail":"Only staff may approve a support ticket."}
