@@ -321,6 +321,14 @@
   font-size: 11px;
 }
 
+.agent-plan-row {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  margin-bottom: 8px;
+  align-items: baseline;
+}
+
 .agent-steps {
   display: flex;
   flex-direction: column;

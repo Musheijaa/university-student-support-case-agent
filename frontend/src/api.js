@@ -51,6 +51,16 @@ export function askAgentSupport(baseUrl, message, role, userId) {
   )
 }
 
+export function getTicket(baseUrl, ticketId, role, userId) {
+  return request(
+    baseUrl,
+    `/api/v1/support-tickets/${encodeURIComponent(ticketId)}`,
+    { method: 'GET' },
+    role,
+    userId,
+  )
+}
+
 export function approveTicket(baseUrl, ticketId, role, userId) {
   return request(
     baseUrl,
