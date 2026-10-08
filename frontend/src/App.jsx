@@ -63,6 +63,10 @@ export default function App() {
       if (mode === 'w5') {
         // --- Week 5 agent endpoint ---
         const result = await askAgentSupport(baseUrl, question, role, userId)
+        // Extract ticket tool calls from steps for the TicketCard/TimetableCard renderers
+        const toolCalls = (result.steps || [])
+          .filter((s) => s.decision === 'tool_call' && s.tool_result)
+          .map((s) => ({ tool: s.tool_name, result: s.tool_result }))
         setMessages((prev) => [
           ...prev,
           {
@@ -71,10 +75,7 @@ export default function App() {
             mode: 'w5',
             text: result.response,
             agentResult: result,
-            // also expose tool_calls so existing TicketCard/TimetableCard still render
-            toolCalls: (result.steps || [])
-              .filter((s) => s.decision === 'tool_call' && s.tool_result)
-              .map((s) => ({ tool: s.tool_name, result: s.tool_result })),
+            toolCalls,
           },
         ])
       } else {

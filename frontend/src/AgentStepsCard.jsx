@@ -16,7 +16,20 @@ const STATUS_COLOURS = {
 }
 
 export default function AgentStepsCard({ agentResult }) {
-  const { run_id, status, iteration_count, tool_call_count, steps } = agentResult
+  const {
+    run_id,
+    status,
+    plan,
+    iteration_count,
+    tool_call_count,
+    max_iterations,
+    max_tool_calls,
+    prompt_version,
+    model,
+    steps,
+    sources,
+  } = agentResult
+
   const colour = STATUS_COLOURS[status] || '#999'
 
   return (
@@ -30,9 +43,17 @@ export default function AgentStepsCard({ agentResult }) {
 
       <div className="agent-trace-meta">
         <span>run: <code>{run_id.slice(0, 8)}…</code></span>
-        <span>iterations: <strong>{iteration_count}</strong></span>
-        <span>tool calls: <strong>{tool_call_count}</strong></span>
+        <span>iterations: <strong>{iteration_count}</strong> / {max_iterations}</span>
+        <span>tool calls: <strong>{tool_call_count}</strong> / {max_tool_calls}</span>
+        {prompt_version && <span>prompt: <code>{prompt_version}</code></span>}
       </div>
+
+      {plan && (
+        <div className="agent-plan-row">
+          <span className="agent-step-label">plan</span>
+          <span className="agent-step-obs">{plan}</span>
+        </div>
+      )}
 
       <div className="agent-steps">
         {steps.map((step, i) => (
@@ -59,9 +80,7 @@ export default function AgentStepsCard({ agentResult }) {
             {step.tool_result && (
               <div className="agent-step-row">
                 <span className="agent-step-label">result</span>
-                <span
-                  className={`agent-step-value ${step.tool_result.success ? 'result-ok' : 'result-fail'}`}
-                >
+                <span className={`agent-step-value ${step.tool_result.success ? 'result-ok' : 'result-fail'}`}>
                   {step.tool_result.success
                     ? step.tool_result.sessions
                       ? `✓ ${step.tool_result.sessions.length} session(s) for ${step.tool_result.course_code}`
@@ -88,6 +107,21 @@ export default function AgentStepsCard({ agentResult }) {
             )}
           </div>
         ))}
+      </div>
+
+      {sources?.length > 0 && (
+        <div className="sources" style={{ marginTop: '8px' }}>
+          <div className="sources-title">Sources</div>
+          <ul>
+            {sources.map((s, i) => (
+              <li key={i}>{s.document} (p.{s.page})</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="meta" style={{ marginTop: '6px' }}>
+        agent-v1.0 · {model}
       </div>
     </div>
   )
