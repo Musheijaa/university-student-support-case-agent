@@ -90,3 +90,43 @@ class AgentRunResponse(BaseModel):
     model: str
     steps: list[AgentStepResponse] = []
     sources: list[SourceResponse] = []
+
+
+class CaseSummaryResponse(BaseModel):
+    case_id: str
+    student_id: str
+    category: str
+    summary: str
+    status: str
+    action_taken: str
+    created_at: str
+    ticket_id: str | None = None
+
+
+class DeleteCaseHistoryResponse(BaseModel):
+    student_id: str
+    deleted_count: int
+    message: str
+
+
+class SessionStateResponse(BaseModel):
+    run_id: str
+    student_id: str
+    message: str
+    status: str
+    stage: str
+    plan: str
+    iteration_count: int
+    tool_call_count: int
+    steps: list[AgentStepResponse] = []
+    response: str
+
+
+class MemoryTraceResponse(BaseModel):
+    trace_id: str
+    timestamp: str
+    operation: str
+    store: str
+    key: str
+    status: str
+    details: dict

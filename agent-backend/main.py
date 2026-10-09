@@ -21,8 +21,11 @@ from dataclasses import asdict
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from agent.case_history import delete_case_history, get_case_history
 from agent.contract import build_contract
 from agent.orchestrator import AGENT_PROMPT_VERSION, run_agent
+from agent.state_store import get_session_state
+from agent.traces import get_memory_traces
 from auth import Actor, get_actor
 from config import get_settings
 from llm.service import (
@@ -33,7 +36,11 @@ from llm.service import (
 from schemas import (
     AgentRunResponse,
     AgentStepResponse,
+    CaseSummaryResponse,
+    DeleteCaseHistoryResponse,
     HealthResponse,
+    MemoryTraceResponse,
+    SessionStateResponse,
     SourceResponse,
     StudentSupportRequest,
     StudentSupportResponse,
@@ -202,3 +209,81 @@ def reject_support_ticket(
     settings = get_settings()
     result = tickets.reject_ticket(ticket_id, db_path=settings.tickets_db_path)
     return TicketActionResponse(**result)
+
+
+@app.get(
+    "/api/v1/cases/{student_id}",
+    response_model=list[CaseSummaryResponse],
+    tags=["case-history"],
+)
+def get_student_case_history(student_id: str) -> list[CaseSummaryResponse]:
+    """Retrieve persistent case-history memory for a student (Task 4 approved fields only)."""
+    settings = get_settings()
+    history = get_case_history(student_id, db_path=settings.case_history_db_path)
+    return [CaseSummaryResponse(**c.to_dict()) for c in history]
+
+
+@app.delete(
+    "/api/v1/cases/{student_id}",
+    response_model=DeleteCaseHistoryResponse,
+    tags=["case-history"],
+)
+def delete_student_case_history(student_id: str) -> DeleteCaseHistoryResponse:
+    """Delete all persistent case-history memory for a student (right-to-be-forgotten)."""
+    settings = get_settings()
+    count = delete_case_history(student_id, db_path=settings.case_history_db_path)
+    return DeleteCaseHistoryResponse(
+        student_id=student_id,
+        deleted_count=count,
+        message=f"Successfully deleted {count} case history record(s) for student '{student_id}'.",
+    )
+
+
+@app.get(
+    "/api/v1/sessions/{session_id}",
+    response_model=SessionStateResponse,
+    tags=["state-store"],
+)
+def get_session_state_endpoint(session_id: str) -> SessionStateResponse:
+    """Retrieve persisted session-state object by session/run ID."""
+    settings = get_settings()
+    state = get_session_state(session_id, db_path=settings.state_db_path)
+    if state is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session state '{session_id}' not found.",
+        )
+    return SessionStateResponse(
+        run_id=state.run_id,
+        student_id=state.student_id,
+        message=state.message,
+        status=state.status,
+        stage=state.stage.value if hasattr(state.stage, "value") else str(state.stage),
+        plan=state.plan,
+        iteration_count=state.iteration_count,
+        tool_call_count=state.tool_call_count,
+        steps=[AgentStepResponse(**asdict(step)) for step in state.steps],
+        response=state.response,
+    )
+
+
+@app.get(
+    "/api/v1/memory/traces",
+    response_model=list[MemoryTraceResponse],
+    tags=["observability"],
+)
+def get_memory_traces_endpoint(
+    store: str | None = None,
+    key: str | None = None,
+    operation: str | None = None,
+) -> list[MemoryTraceResponse]:
+    """Retrieve audit traces for all memory and state store operations."""
+    settings = get_settings()
+    traces = get_memory_traces(
+        store=store,
+        key=key,
+        operation=operation,
+        db_path=settings.traces_db_path,
+    )
+    return [MemoryTraceResponse(**t.to_dict()) for t in traces]
+

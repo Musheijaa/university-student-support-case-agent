@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     # tool budget is max_tool_calls above.
     agent_max_iterations: int = 4
 
+    # Week 6: State store, case history memory, and observability traces.
+    state_db_path: str = "data/session_state.db"
+    case_history_db_path: str = "data/case_history.db"
+    traces_db_path: str = "data/traces.db"
+
     @property
     def groq_configured(self) -> bool:
         return bool(self.groq_api_key.strip())
