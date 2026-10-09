@@ -10,6 +10,12 @@ inspectable run: a contract (agent/contract.py) bounds it, a per-run
 state (agent/state.py) records every decision as a step, and every run
 ends in exactly one terminal status from the contract - never left
 "running".
+
+Week 6 adds bounded per-session memory: `run_agent` accepts an optional
+`prior_turn` dict (the previous turn in the same session) and prepends a
+short summary to the user prompt so the model can resolve references like
+"that ticket" or "it". Memory only supplies context; it does not trigger
+tool calls, alter limits, or change any stop condition.
 """
 
 import json
@@ -71,10 +77,35 @@ def _plan_summary(state: AgentState, contract: AgentTaskContract) -> str:
     )
 
 
+def _prefix_prior_context(user_message: str, prior_turn: dict) -> str:
+    """Week 6: prepend a bounded summary of the previous turn in this session.
+
+    Memory only supplies context for the model's Plan/Decide phase. It does
+    not trigger tool calls and does not alter the agent's limits or stop
+    conditions.
+    """
+    ticket_ids = prior_turn.get("last_drafted_ticket_ids") or []
+    tickets_str = ", ".join(ticket_ids) if ticket_ids else "none"
+    return (
+        "## Prior context (same session, earlier turn)\n"
+        f"The student previously asked: {prior_turn.get('last_message', '')!r}\n"
+        f"You responded: {prior_turn.get('last_response', '')!r}\n"
+        f"You drafted ticket(s): {tickets_str}\n"
+        f"The previous run ended with status: {prior_turn.get('last_status', '')!r}\n\n"
+        "If the student's new message refers to the earlier turn (for example "
+        "\"that ticket\", \"it\", or \"the thing I asked about\"), use this context. "
+        "Do not re-draft the same ticket unless the student explicitly asks for "
+        "a new one.\n\n"
+        "## Current turn\n"
+        + user_message
+    )
+
+
 def run_agent(
     student_message: str,
     settings: Settings | None = None,
     actor: Actor | None = None,
+    prior_turn: dict | None = None,
 ) -> AgentState:
     """Run one bounded agent episode. Raises LLMConfigurationError if Groq isn't configured;
     every other failure ends the run with a terminal status instead of raising."""
@@ -94,14 +125,19 @@ def run_agent(
     # Context: same retrieved evidence as Week 3/4.
     evidence_block, state.sources = _retrieve_evidence(student_message, settings)
     state.plan = _plan_summary(state, contract)
+
+    # Build the user prompt. Week 6: if a prior turn exists for this
+    # session, prepend a bounded summary so the model can resolve
+    # references like "that ticket".
+    user_message = prompt.build_user_prompt(
+        build_rag_user_message(question=student_message, evidence_block=evidence_block)
+    )
+    if prior_turn:
+        user_message = _prefix_prior_context(user_message, prior_turn)
+
     messages: list[dict] = [
         {"role": "system", "content": prompt.system_prompt},
-        {
-            "role": "user",
-            "content": prompt.build_user_prompt(
-                build_rag_user_message(question=student_message, evidence_block=evidence_block)
-            ),
-        },
+        {"role": "user", "content": user_message},
     ]
 
     while state.iteration_count < contract.max_iterations:

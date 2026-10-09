@@ -13,16 +13,24 @@ request check_timetable or create_support_ticket, but only the
 application executes them, and only a human calling the approve/reject
 endpoints above can move a ticket out of PENDING_APPROVAL - the model
 has no path to submit or approve a ticket itself.
+
+Week 6 adds bounded per-session memory (see docs/memory-design.md):
+the agent can recall the last turn in the same session when the
+X-Memory header is set to "on" (or when MEMORY_ENABLED is true). Memory
+only supplies context; it never triggers tool calls or bypasses limits.
 """
 
 import logging
+import uuid
 from dataclasses import asdict
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+
 
 from agent.contract import build_contract
 from agent.orchestrator import AGENT_PROMPT_VERSION, run_agent
+from agent import memory as agent_memory
 from auth import Actor, get_actor
 from config import get_settings
 from llm.service import (
@@ -119,17 +127,53 @@ def student_support(
     tags=["agent"],
 )
 def agent_student_support(
-    payload: StudentSupportRequest, actor: Actor = Depends(get_actor)
+    payload: StudentSupportRequest,
+    request: Request,
+    actor: Actor = Depends(get_actor),
 ) -> AgentRunResponse:
     settings = get_settings()
+
+    # Week 6: session identity and memory toggle.
+    session_id = request.headers.get("X-Session-Id") or str(uuid.uuid4())
+    memory_header = (request.headers.get("X-Memory") or "").strip().lower()
+    if memory_header in ("on", "true", "1"):
+        memory_enabled = True
+    elif memory_header in ("off", "false", "0"):
+        memory_enabled = False
+    else:
+        memory_enabled = settings.memory_enabled
+
+    prior_turn = None
+    if memory_enabled:
+        prior_turn = agent_memory.read_session(
+            session_id,
+            db_path=settings.memory_db_path,
+            ttl_hours=settings.memory_ttl_hours,
+        )
+
     try:
-        state = run_agent(payload.message, settings=settings, actor=actor)
+        state = run_agent(
+            payload.message,
+            settings=settings,
+            actor=actor,
+            prior_turn=prior_turn,
+        )
     except LLMConfigurationError as exc:
         logger.error("LLM configuration error: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="The student-support assistant is not configured. Please contact an administrator.",
         ) from exc
+
+    if memory_enabled:
+        agent_memory.write_session(
+            session_id,
+            message=payload.message,
+            response=state.response,
+            drafted_ticket_ids=state.drafted_ticket_ids,
+            status=state.status,
+            db_path=settings.memory_db_path,
+        )
 
     contract = build_contract(settings)
     logger.info(
@@ -138,6 +182,8 @@ def agent_student_support(
     )
     return AgentRunResponse(
         run_id=state.run_id,
+        session_id=session_id,
+        memory_enabled=memory_enabled,
         status=state.status,
         response=state.response,
         plan=state.plan,

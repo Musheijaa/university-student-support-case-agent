@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     # tool budget is max_tool_calls above.
     agent_max_iterations: int = 4
 
+    # Week 6: bounded per-session memory. See docs/memory-design.md.
+    # Memory is opt-in per request via the X-Memory header; this flag
+    # only sets the server's default.
+    memory_enabled: bool = False
+    memory_ttl_hours: int = 24
+    memory_db_path: str = "data/sessions.db"
+    
     @property
     def groq_configured(self) -> bool:
         return bool(self.groq_api_key.strip())
