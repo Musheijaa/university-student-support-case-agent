@@ -38,3 +38,4 @@ frontend/build/
 
 # Logs
 *.log
+agent-backend/data/sessions.db

@@ -79,6 +79,8 @@ class AgentStepResponse(BaseModel):
 
 class AgentRunResponse(BaseModel):
     run_id: str
+    session_id: str = ""
+    memory_enabled: bool = False
     status: str
     response: str
     plan: str
@@ -91,6 +93,7 @@ class AgentRunResponse(BaseModel):
     steps: list[AgentStepResponse] = []
     sources: list[SourceResponse] = []
 
+    
 
 class CaseSummaryResponse(BaseModel):
     case_id: str
@@ -130,3 +133,4 @@ class MemoryTraceResponse(BaseModel):
     key: str
     status: str
     details: dict
+
