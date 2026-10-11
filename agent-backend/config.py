@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     memory_ttl_hours: int = 24
     memory_db_path: str = "data/sessions.db"
     
+    # Week 6: State store, case history memory, and observability traces.
+    state_db_path: str = "data/session_state.db"
+    case_history_db_path: str = "data/case_history.db"
+    traces_db_path: str = "data/traces.db"
+
     @property
     def groq_configured(self) -> bool:
         return bool(self.groq_api_key.strip())
