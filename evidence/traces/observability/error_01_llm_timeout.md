@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `47cb4485-8e31-489e-b2ae-88e39def7b19` |
+| Run ID | `144c3d9e-f763-4c5e-b8ac-f41ec6e70dba` |
 | Terminal status | **`llm_error`** |
 | Error code | `LLM_TIMEOUT` |
-| Started / ended | 2026-10-13T10:06:52.187+00:00 → 2026-10-13T10:06:53.266+00:00 |
-| Total latency | 1079.2 ms |
+| Started / ended | 2026-10-13T10:13:02.606+00:00 → 2026-10-13T10:13:03.330+00:00 |
+| Total latency | 724.3 ms |
 | Iterations / tool calls | 1 / 0 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=0.2s, max_retries=0 |
@@ -23,7 +23,7 @@
 
 ## Context: retrieval
 
-top_k=4, min_score=0.35, latency=670.3 ms — **0 used as evidence, 4 below threshold**
+top_k=4, min_score=0.35, latency=305.8 ms — **0 used as evidence, 4 below threshold**
 
 | Rank | Score | Used | Document | Page | Text preview |
 |---|---|---|---|---|---|
@@ -34,11 +34,11 @@ top_k=4, min_score=0.35, latency=670.3 ms — **0 used as evidence, 4 below thre
 
 ## Iterations
 
-### Iteration 1 — error (326.8 ms)
+### Iteration 1 — error (349.5 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 326.4 ms |
+| Latency | 293.9 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 2 |
 | Finish reason | — |
@@ -58,7 +58,7 @@ top_k=4, min_score=0.35, latency=670.3 ms — **0 used as evidence, 4 below thre
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 670.3 | 326.4 | 0 | 82.5 | 1079.2 |
+| 305.8 | 293.9 | 0 | 124.6 | 724.3 |
 
 ## Final response
 

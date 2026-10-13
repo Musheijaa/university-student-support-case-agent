@@ -2,18 +2,18 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `c4e1915a-fa21-4ae8-9308-37a896405cf7` |
+| Run ID | `652fff31-d899-4722-8cf1-cc0e098713cb` |
 | Terminal status | **`max_iterations_reached`** |
 | Error code | `AGENT_ITERATION_BUDGET_EXHAUSTED` |
-| Started / ended | 2026-10-13T10:04:56.609+00:00 → 2026-10-13T10:05:03.051+00:00 |
-| Total latency | 6442.0 ms |
+| Started / ended | 2026-10-13T10:12:56.585+00:00 → 2026-10-13T10:12:57.601+00:00 |
+| Total latency | 1016.5 ms |
 | Iterations / tool calls | 1 / 1 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=20.0s, max_retries=2 |
 | Prompt version | `agent-v1.0` (system prompt sha256 `ad291169d2e2…`) |
 | Tool definitions sha256 | `3b7ddb7be4e6…` |
 | Contract budget | 1 iteration(s), 3 tool call(s); approved: check_timetable, create_support_ticket |
-| Tokens (prompt / completion / total) | 819 / 96 / 915 |
+| Tokens (prompt / completion / total) | 819 / 167 / 986 |
 
 ## Request
 
@@ -23,7 +23,7 @@
 
 ## Context: retrieval
 
-top_k=4, min_score=0.35, latency=307.8 ms — **0 used as evidence, 4 below threshold**
+top_k=4, min_score=0.35, latency=304.4 ms — **0 used as evidence, 4 below threshold**
 
 | Rank | Score | Used | Document | Page | Text preview |
 |---|---|---|---|---|---|
@@ -34,16 +34,16 @@ top_k=4, min_score=0.35, latency=307.8 ms — **0 used as evidence, 4 below thre
 
 ## Iterations
 
-### Iteration 1 — tool_call (6075.9 ms)
+### Iteration 1 — tool_call (648.7 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 6074.9 ms |
+| Latency | 629.6 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 2 |
 | Finish reason | `tool_calls` |
-| Tokens (prompt / completion) | 819 / 96 |
-| Provider request id | `chatcmpl-b7e4e129-d529-431f-8a92-0d2e43bac8fb` |
+| Tokens (prompt / completion) | 819 / 167 |
+| Provider request id | `chatcmpl-43126e7c-5251-4611-ba6c-b1418d654665` |
 | Requested tools | check_timetable |
 | Error code | — |
 
@@ -63,7 +63,7 @@ top_k=4, min_score=0.35, latency=307.8 ms — **0 used as evidence, 4 below thre
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 307.8 | 6074.9 | 0.3 | 59.0 | 6442.0 |
+| 304.4 | 629.6 | 0.3 | 82.2 | 1016.5 |
 
 ## Final response
 

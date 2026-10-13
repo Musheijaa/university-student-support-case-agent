@@ -2,18 +2,18 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `d2d56300-1db3-4a3b-baa4-ad564e6482c8` |
+| Run ID | `71978c25-a6cd-409c-ac5b-b9d969670cf5` |
 | Terminal status | **`completed`** |
 | Error code | — |
-| Started / ended | 2026-10-13T10:03:58.187+00:00 → 2026-10-13T10:04:00.205+00:00 |
-| Total latency | 2017.8 ms |
+| Started / ended | 2026-10-13T10:12:23.920+00:00 → 2026-10-13T10:12:25.926+00:00 |
+| Total latency | 2006.0 ms |
 | Iterations / tool calls | 2 / 1 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=20.0s, max_retries=2 |
 | Prompt version | `agent-v1.0` (system prompt sha256 `ad291169d2e2…`) |
 | Tool definitions sha256 | `3b7ddb7be4e6…` |
 | Contract budget | 4 iteration(s), 3 tool call(s); approved: check_timetable, create_support_ticket |
-| Tokens (prompt / completion / total) | 1804 / 262 / 2066 |
+| Tokens (prompt / completion / total) | 1804 / 285 / 2089 |
 
 ## Request
 
@@ -23,7 +23,7 @@
 
 ## Context: retrieval
 
-top_k=4, min_score=0.35, latency=644.7 ms — **0 used as evidence, 4 below threshold**
+top_k=4, min_score=0.35, latency=626.7 ms — **0 used as evidence, 4 below threshold**
 
 | Rank | Score | Used | Document | Page | Text preview |
 |---|---|---|---|---|---|
@@ -34,38 +34,38 @@ top_k=4, min_score=0.35, latency=644.7 ms — **0 used as evidence, 4 below thre
 
 ## Iterations
 
-### Iteration 1 — tool_call (610.5 ms)
+### Iteration 1 — tool_call (648.6 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 609.4 ms |
+| Latency | 626.1 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 2 |
 | Finish reason | `tool_calls` |
-| Tokens (prompt / completion) | 819 / 66 |
-| Provider request id | `chatcmpl-91b35a5b-2992-455b-83c1-223da0b46b17` |
+| Tokens (prompt / completion) | 819 / 94 |
+| Provider request id | `chatcmpl-965d7886-d6f0-4994-ab62-9b64684f5e1e` |
 | Requested tools | check_timetable |
 | Error code | — |
 
-**Tool `check_timetable`** — ✓ success in 0.4 ms · approved=True · error_code=—
+**Tool `check_timetable`** — ✓ success in 0.2 ms · approved=True · error_code=—
 
 - Arguments: `{"course_code": "BSE4104"}`
 - Response: `{"success": true, "course_code": "BSE4104", "sessions": [{"date": "2026-09-24", "start_time": "10:00", "end_time": "12:00", "venue": "Room 204"}, {"date": "2026-10-01", "start_time": "10:00", "end_time": "12:00", "venue": "Room 204"}, {"date": "2026-10-08", "start_time": "10:00", "end_time": "12:00", "venue": "Room 204"}], "error": null}`
 - Observation: Found 3 timetable session(s) for BSE4104.
 
-### Iteration 2 — final_answer (676.3 ms)
+### Iteration 2 — final_answer (634.8 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 675.8 ms |
+| Latency | 610.2 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 4 |
 | Finish reason | `stop` |
-| Tokens (prompt / completion) | 985 / 196 |
-| Provider request id | `chatcmpl-6b97e440-4355-46a3-99ba-3d4badbf4bd5` |
+| Tokens (prompt / completion) | 985 / 191 |
+| Provider request id | `chatcmpl-9e2cf095-72f8-466e-9f45-59146dcbdc66` |
 | Requested tools | none |
 | Error code | — |
-| Content preview | BSE4104 meets on the following dates: \| Date \| Time \| Venue \| \|------\|------\|-------\| \| 2026‑09‑24 \| 10:00 – 12:00 \| Room 204 \| \| 2026‑10‑01 \| 10:00 – 12:00 \| Room 204 \| \| 2026‑10‑08 \| 10:00 – 12:00 … |
+| Content preview | **BSE4104** meets on the following dates: \| Date \| Time \| Venue \| \|------\|------\|-------\| \| 24 Sep 2026 \| 10:00 – 12:00 \| Room 204 \| \| 01 Oct 2026 \| 10:00 – 12:00 \| Room 204 \| \| 08 Oct 2026 \| 10:00 –… |
 
 ## Errors
 
@@ -75,16 +75,16 @@ _None._
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 644.7 | 1285.2 | 0.4 | 87.5 | 2017.8 |
+| 626.7 | 1236.3 | 0.2 | 142.8 | 2006.0 |
 
 ## Final response
 
-BSE4104 meets on the following dates:
+**BSE4104** meets on the following dates:
 
 | Date | Time | Venue |
 |------|------|-------|
-| 2026‑09‑24 | 10:00 – 12:00 | Room 204 |
-| 2026‑10‑01 | 10:00 – 12:00 | Room 204 |
-| 2026‑10‑08 | 10:00 – 12:00 | Room 204 |
+| 24 Sep 2026 | 10:00 – 12:00 | Room 204 |
+| 01 Oct 2026 | 10:00 – 12:00 | Room 204 |
+| 08 Oct 2026 | 10:00 – 12:00 | Room 204 |
 
 These are the scheduled sessions for the course.

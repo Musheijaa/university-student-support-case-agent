@@ -1,9 +1,9 @@
 {
   "schema_version": "trace-v1",
-  "run_id": "47cb4485-8e31-489e-b2ae-88e39def7b19",
-  "started_at": "2026-10-13T10:06:52.187+00:00",
-  "ended_at": "2026-10-13T10:06:53.266+00:00",
-  "total_latency_ms": 1079.2,
+  "run_id": "144c3d9e-f763-4c5e-b8ac-f41ec6e70dba",
+  "started_at": "2026-10-13T10:13:02.606+00:00",
+  "ended_at": "2026-10-13T10:13:03.330+00:00",
+  "total_latency_ms": 724.3,
   "request": {
     "message": "When is BSE4104 scheduled?",
     "actor_role": "student",
@@ -53,7 +53,7 @@
     "query": "When is BSE4104 scheduled?",
     "top_k": 4,
     "min_score": 0.35,
-    "latency_ms": 670.3,
+    "latency_ms": 305.8,
     "kept_count": 0,
     "rejected_count": 4,
     "chunks": [
@@ -102,8 +102,8 @@
   "iterations": [
     {
       "iteration": 1,
-      "started_at": "2026-10-13T10:06:52.939+00:00",
-      "latency_ms": 326.8,
+      "started_at": "2026-10-13T10:13:02.980+00:00",
+      "latency_ms": 349.5,
       "decisions": [
         "error"
       ],
@@ -113,7 +113,7 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 326.4,
+        "latency_ms": 293.9,
         "input_message_count": 2,
         "provider_request_id": null,
         "finish_reason": null,
@@ -132,7 +132,7 @@
       "stage": "llm",
       "iteration": 1,
       "message": "The model provider timed out. Please try again.",
-      "at": "2026-10-13T10:06:53.266+00:00"
+      "at": "2026-10-13T10:13:03.312+00:00"
     }
   ],
   "terminal": {
@@ -143,11 +143,11 @@
     "drafted_ticket_ids": [],
     "response": "The assistant is temporarily unable to reach its language model. Please try again shortly.",
     "latency_breakdown_ms": {
-      "retrieval": 670.3,
-      "llm": 326.4,
+      "retrieval": 305.8,
+      "llm": 293.9,
       "tools": 0,
-      "orchestration_overhead": 82.5,
-      "total": 1079.2
+      "orchestration_overhead": 124.6,
+      "total": 724.3
     },
     "token_usage": {
       "prompt_tokens": 0,

@@ -1,0 +1,33 @@
+# Observability test evidence — captured 2026-10-13T10:14:16Z on branch observability-tracing
+
+## tests/test_observability.py (verbose)
+tests/test_observability.py::test_normal_run_trace_captures_every_cognitive_step PASSED [  3%]
+tests/test_observability.py::test_trace_is_exported_as_json_and_markdown PASSED [  7%]
+tests/test_observability.py::test_export_disabled_writes_nothing PASSED  [ 11%]
+tests/test_observability.py::test_human_approval_boundary_records_drafted_ticket PASSED [ 15%]
+tests/test_observability.py::test_unapproved_tool_is_traced_as_not_executed PASSED [ 19%]
+tests/test_observability.py::test_iteration_budget_boundary_has_error_code PASSED [ 23%]
+tests/test_observability.py::test_tool_budget_boundary_offers_no_tools_once_spent PASSED [ 26%]
+tests/test_observability.py::test_llm_error_code_reaches_trace_and_state PASSED [ 30%]
+tests/test_observability.py::test_tool_failure_error_code_and_replan PASSED [ 34%]
+tests/test_observability.py::test_tool_with_no_result_gets_no_result_code PASSED [ 38%]
+tests/test_observability.py::test_malformed_tool_arguments_keep_raw_text PASSED [ 42%]
+tests/test_observability.py::test_not_configured_run_is_aborted_but_traced PASSED [ 46%]
+tests/test_observability.py::test_retrieval_failure_is_aborted_with_retrieval_code PASSED [ 50%]
+tests/test_observability.py::test_client_maps_provider_failures_to_error_codes[exc0-LLM_TIMEOUT] PASSED [ 53%]
+tests/test_observability.py::test_client_maps_provider_failures_to_error_codes[exc1-LLM_CONNECTION_ERROR] PASSED [ 57%]
+tests/test_observability.py::test_client_maps_provider_failures_to_error_codes[exc2-LLM_HTTP_ERROR_401] PASSED [ 61%]
+tests/test_observability.py::test_client_maps_provider_failures_to_error_codes[exc3-LLM_RATE_LIMITED] PASSED [ 65%]
+tests/test_observability.py::test_every_cognitive_step_is_logged_as_a_structured_event PASSED [ 69%]
+tests/test_observability.py::test_json_formatter_emits_one_object_per_line PASSED [ 73%]
+tests/test_observability.py::test_text_formatter_appends_fields PASSED   [ 76%]
+tests/test_observability.py::test_retrieve_with_rejected_splits_on_min_score PASSED [ 80%]
+tests/test_observability.py::test_markdown_escapes_pipes_in_cells PASSED [ 84%]
+tests/test_observability.py::test_agent_endpoint_returns_error_code_and_latency PASSED [ 88%]
+tests/test_observability.py::test_trace_endpoint_is_staff_only PASSED    [ 92%]
+tests/test_observability.py::test_staff_ticket_decisions_are_audit_logged PASSED [ 96%]
+tests/test_observability.py::test_two_tool_calls_in_one_reply_follow_the_stage_model PASSED [100%]
+============================== 26 passed in 3.75s ==============================
+
+## Full backend suite
+204 passed in 15.45s

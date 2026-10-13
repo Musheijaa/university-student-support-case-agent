@@ -2,18 +2,18 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `88746d86-94ae-42c3-9dff-d4e0354d2688` |
+| Run ID | `a51d7352-41c0-4b39-a899-46ccb1cb3f02` |
 | Terminal status | **`completed`** |
 | Error code | — |
-| Started / ended | 2026-10-13T10:05:04.362+00:00 → 2026-10-13T10:05:16.522+00:00 |
-| Total latency | 12159.6 ms |
+| Started / ended | 2026-10-13T10:13:14.018+00:00 → 2026-10-13T10:13:15.725+00:00 |
+| Total latency | 1706.5 ms |
 | Iterations / tool calls | 2 / 1 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=20.0s, max_retries=2 |
 | Prompt version | `agent-v1.0` (system prompt sha256 `ad291169d2e2…`) |
 | Tool definitions sha256 | `3b7ddb7be4e6…` |
 | Contract budget | 4 iteration(s), 3 tool call(s); approved: check_timetable, create_support_ticket |
-| Tokens (prompt / completion / total) | 1701 / 263 / 1964 |
+| Tokens (prompt / completion / total) | 1701 / 210 / 1911 |
 
 ## Request
 
@@ -23,7 +23,7 @@
 
 ## Context: retrieval
 
-top_k=4, min_score=0.35, latency=310.3 ms — **0 used as evidence, 4 below threshold**
+top_k=4, min_score=0.35, latency=306.8 ms — **0 used as evidence, 4 below threshold**
 
 | Rank | Score | Used | Document | Page | Text preview |
 |---|---|---|---|---|---|
@@ -34,38 +34,38 @@ top_k=4, min_score=0.35, latency=310.3 ms — **0 used as evidence, 4 below thre
 
 ## Iterations
 
-### Iteration 1 — tool_call (5801.4 ms)
+### Iteration 1 — tool_call (686.6 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 5799.9 ms |
+| Latency | 670.0 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 2 |
 | Finish reason | `tool_calls` |
-| Tokens (prompt / completion) | 819 / 126 |
-| Provider request id | `chatcmpl-38a15343-b31f-4817-bca9-03bfae92eb88` |
+| Tokens (prompt / completion) | 819 / 62 |
+| Provider request id | `chatcmpl-82784f20-ca46-48c2-a297-adb237fa8c97` |
 | Requested tools | check_timetable |
 | Error code | — |
 
-**Tool `check_timetable`** — ✗ failed in 0.4 ms · approved=True · error_code=`TOOL_DATA_UNAVAILABLE`
+**Tool `check_timetable`** — ✗ failed in 0.1 ms · approved=True · error_code=`TOOL_DATA_UNAVAILABLE`
 
 - Arguments: `{"course_code": "BSE4104"}`
 - Response: `{"success": false, "error": "The timetable service is temporarily unavailable. Please try again later.", "error_code": "TOOL_DATA_UNAVAILABLE"}`
 - Observation: Tool failed: The timetable service is temporarily unavailable. Please try again later. - re-planning with this information.
 
-### Iteration 2 — final_answer (5993.0 ms)
+### Iteration 2 — final_answer (638.3 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 5992.5 ms |
+| Latency | 614.8 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 4 |
 | Finish reason | `stop` |
-| Tokens (prompt / completion) | 882 / 137 |
-| Provider request id | `chatcmpl-76666f19-c13c-4020-b80d-ebc6923c78e6` |
+| Tokens (prompt / completion) | 882 / 148 |
+| Provider request id | `chatcmpl-c3332c4d-c911-4915-8ce5-5186803a6f93` |
 | Requested tools | none |
 | Error code | — |
-| Content preview | I’m sorry, but I couldn’t retrieve the timetable for BSE4104 at this time. Please try again later or contact the registrar’s office for the most up‑to‑date schedule. |
+| Content preview | I’m sorry, but I couldn’t retrieve the timetable for BSE4104. The timetable service is currently unavailable. Please try again later or contact the registrar’s office for the most up‑to‑date schedule. |
 
 ## Errors
 
@@ -77,8 +77,8 @@ top_k=4, min_score=0.35, latency=310.3 ms — **0 used as evidence, 4 below thre
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 310.3 | 11792.4 | 0.4 | 56.5 | 12159.6 |
+| 306.8 | 1284.8 | 0.1 | 114.8 | 1706.5 |
 
 ## Final response
 
-I’m sorry, but I couldn’t retrieve the timetable for BSE4104 at this time. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.
+I’m sorry, but I couldn’t retrieve the timetable for BSE4104. The timetable service is currently unavailable. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.
