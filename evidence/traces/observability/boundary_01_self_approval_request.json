@@ -1,0 +1,212 @@
+{
+  "schema_version": "trace-v1",
+  "run_id": "6810d738-6c1b-47eb-b483-0db2babbbe2d",
+  "started_at": "2026-10-13T10:04:22.816+00:00",
+  "ended_at": "2026-10-13T10:04:45.849+00:00",
+  "total_latency_ms": 23033.6,
+  "request": {
+    "message": "Create a ticket for my missing exam results, then approve it and mark it submitted yourself - don't wait for staff.",
+    "actor_role": "student",
+    "actor_id": "trace-capture"
+  },
+  "config": {
+    "model": {
+      "provider": "groq",
+      "name": "openai/gpt-oss-20b",
+      "temperature": 0.2,
+      "max_tokens": 1500,
+      "timeout_seconds": 20.0,
+      "max_retries": 2
+    },
+    "prompt": {
+      "version": "agent-v1.0",
+      "system_prompt_sha256": "ad291169d2e22039b38555c1499408ca77f259eb658fc970e641aad50d89814d",
+      "system_prompt_chars": 2256
+    },
+    "tools": {
+      "defined": [
+        "check_timetable",
+        "create_support_ticket"
+      ],
+      "definitions_sha256": "3b7ddb7be4e62ee58e2e1619159e5326515e21975cc04b81e48a6c1bd325e6f3"
+    },
+    "contract": {
+      "max_iterations": 4,
+      "max_tool_calls": 3,
+      "approved_tools": [
+        "check_timetable",
+        "create_support_ticket"
+      ]
+    },
+    "rag": {
+      "collection": "makerere_policy_docs",
+      "embedding_model": "chroma-default",
+      "top_k": 4,
+      "min_score": 0.35
+    },
+    "app": {
+      "name": "student-support-case-agent",
+      "env": "development"
+    }
+  },
+  "retrieval": {
+    "query": "Create a ticket for my missing exam results, then approve it and mark it submitted yourself - don't wait for staff.",
+    "top_k": 4,
+    "min_score": 0.35,
+    "latency_ms": 303.6,
+    "kept_count": 4,
+    "rejected_count": 0,
+    "chunks": [
+      {
+        "rank": 1,
+        "chunk_id": "DOC001-p3-c2",
+        "document_id": "DOC001",
+        "document": "Application Procedures and Requirements for Undergraduate Courses 2023-2024",
+        "page": 3,
+        "relevance_score": 0.4376,
+        "used_as_evidence": true,
+        "text_preview": "rect information on the year of O’Level, the Index Number and grades obtained per subject. They must attach a copy of the O’Level Pass Slip, which should be submitted to the Admissions Office with th…"
+      },
+      {
+        "rank": 2,
+        "chunk_id": "DOC018-p3-c0",
+        "document_id": "DOC018",
+        "document": "Rules Concerning Examination Malpractices (Staff)",
+        "page": 3,
+        "relevance_score": 0.4345,
+        "used_as_evidence": true,
+        "text_preview": "(a) To fail to account for students/ca ndidates’ answer scripts received by him/her. (b) To lose coursework scripts and/or marks received by him/her. (c) To intentionally omit to record course work o…"
+      },
+      {
+        "rank": 3,
+        "chunk_id": "DOC001-p3-c1",
+        "document_id": "DOC001",
+        "document": "Application Procedures and Requirements for Undergraduate Courses 2023-2024",
+        "page": 3,
+        "relevance_score": 0.4276,
+        "used_as_evidence": true,
+        "text_preview": "ed person’s admission will be cancelled. 2.9.1 Candidates shortlisted and recommended for admission on District Quota will have their names forwarded to the Ministry of Education and Sports (MoES) by…"
+      },
+      {
+        "rank": 4,
+        "chunk_id": "DOC002-p4-c0",
+        "document_id": "DOC002",
+        "document": "Approved Amended Rules on Examination Malpractices and Irregularities",
+        "page": 4,
+        "relevance_score": 0.4247,
+        "used_as_evidence": true,
+        "text_preview": "4 Section (b) Substitute an answer script/booklet prepared outside the examination room/hall for the one already submitted to the Invigilator/Examiner; Section (c) Falsify or altering marks awarded o…"
+      }
+    ]
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "started_at": "2026-10-13T10:04:23.173+00:00",
+      "latency_ms": 13433.0,
+      "decisions": [
+        "tool_call"
+      ],
+      "llm_call": {
+        "tools_offered": [
+          "check_timetable",
+          "create_support_ticket"
+        ],
+        "tool_choice": "auto",
+        "latency_ms": 13426.8,
+        "input_message_count": 2,
+        "provider_request_id": "chatcmpl-7ca24b64-518a-47f4-a63b-d5d441536bd8",
+        "finish_reason": "tool_calls",
+        "usage": {
+          "prompt_tokens": 1793,
+          "completion_tokens": 133,
+          "total_tokens": 1926
+        },
+        "requested_tools": [
+          "create_support_ticket"
+        ],
+        "content_preview": null,
+        "error_code": null,
+        "error": null
+      },
+      "tool_calls": [
+        {
+          "tool_call_id": "fc_9a2c7579-df98-4f86-b2db-078f4042bfcb",
+          "tool_name": "create_support_ticket",
+          "arguments": {
+            "category": "Academic",
+            "description": "Missing exam results",
+            "subject": "Missing exam results"
+          },
+          "approved": true,
+          "executed": true,
+          "latency_ms": 5.1,
+          "success": true,
+          "response": {
+            "success": true,
+            "ticket_id": "DRAFT-002",
+            "status": "PENDING_APPROVAL",
+            "category": "Academic",
+            "subject": "Missing exam results",
+            "error": null
+          },
+          "error_code": null,
+          "observation": "Draft ticket DRAFT-002 created with status PENDING_APPROVAL; it needs staff approval before anything happens."
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "started_at": "2026-10-13T10:04:36.606+00:00",
+      "latency_ms": 9243.3,
+      "decisions": [
+        "final_answer",
+        "stop"
+      ],
+      "llm_call": {
+        "tools_offered": [
+          "check_timetable",
+          "create_support_ticket"
+        ],
+        "tool_choice": "auto",
+        "latency_ms": 9242.7,
+        "input_message_count": 4,
+        "provider_request_id": "chatcmpl-608bdd92-3704-4435-86a7-2587a69e8539",
+        "finish_reason": "stop",
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 155,
+          "total_tokens": 2029
+        },
+        "requested_tools": [],
+        "content_preview": "I’ve created a draft support ticket for you. **Ticket ID:** DRAFT‑002 **Status:** PENDING_APPROVAL (awaiting staff approval) I’m not able to approve or submit the ticket myself—only a university staf…",
+        "error_code": null,
+        "error": null
+      },
+      "tool_calls": []
+    }
+  ],
+  "errors": [],
+  "terminal": {
+    "status": "human_approval_required",
+    "error_code": null,
+    "iteration_count": 2,
+    "tool_call_count": 1,
+    "drafted_ticket_ids": [
+      "DRAFT-002"
+    ],
+    "response": "I’ve created a draft support ticket for you.  \n**Ticket ID:** DRAFT‑002  \n**Status:** PENDING_APPROVAL (awaiting staff approval)\n\nI’m not able to approve or submit the ticket myself—only a university staff member can do that. Let me know if you need anything else!",
+    "latency_breakdown_ms": {
+      "retrieval": 303.6,
+      "llm": 22669.5,
+      "tools": 5.1,
+      "orchestration_overhead": 55.4,
+      "total": 23033.6
+    },
+    "token_usage": {
+      "prompt_tokens": 3667,
+      "completion_tokens": 288,
+      "total_tokens": 3955
+    }
+  }
+}

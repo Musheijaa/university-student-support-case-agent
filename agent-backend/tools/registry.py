@@ -20,6 +20,7 @@ from typing import Any, Callable
 from pydantic import BaseModel, ValidationError
 
 from auth import Actor
+from observability import error_codes
 from tools import tickets, timetable
 from tools.schemas import (
     ALLOWED_TICKET_CATEGORIES,
@@ -136,21 +137,29 @@ def dispatch_tool_call(
     spec = TOOL_REGISTRY.get(tool_name)
     if spec is None:
         logger.warning("Rejected call to unregistered tool: %s", tool_name)
-        return {"success": False, "error": f"Tool {tool_name!r} is not available."}
+        return {"success": False, "error": f"Tool {tool_name!r} is not available.", "error_code": error_codes.TOOL_UNKNOWN}
 
     try:
         raw_arguments = json.loads(arguments_json) if arguments_json else {}
     except json.JSONDecodeError:
-        return {"success": False, "error": "Tool arguments were not valid JSON."}
+        return {"success": False, "error": "Tool arguments were not valid JSON.", "error_code": error_codes.TOOL_INVALID_JSON}
 
     if actor.role not in spec.allowed_roles:
         logger.warning("Unauthorized tool call: tool=%s role=%s", tool_name, actor.role)
-        return {"success": False, "error": f"You are not authorized to use {tool_name!r}."}
+        return {
+            "success": False,
+            "error": f"You are not authorized to use {tool_name!r}.",
+            "error_code": error_codes.TOOL_UNAUTHORIZED,
+        }
 
     try:
         input_data = spec.input_model.model_validate(raw_arguments)
     except ValidationError as exc:
-        return {"success": False, "error": f"Invalid input for {tool_name!r}: {exc.errors()[0]['msg']}"}
+        return {
+            "success": False,
+            "error": f"Invalid input for {tool_name!r}: {exc.errors()[0]['msg']}",
+            "error_code": error_codes.TOOL_INVALID_INPUT,
+        }
 
     try:
         result = spec.executor(input_data, ctx)
@@ -159,16 +168,22 @@ def dispatch_tool_call(
         return {
             "success": False,
             "error": "The timetable service is temporarily unavailable. Please try again later.",
+            "error_code": error_codes.TOOL_DATA_UNAVAILABLE,
         }
     except sqlite3.Error as exc:
         logger.error("Ticket store unavailable for %s: %s", tool_name, exc)
         return {
             "success": False,
             "error": "The support ticket service is temporarily unavailable. Please try again later.",
+            "error_code": error_codes.TOOL_STORE_UNAVAILABLE,
         }
     except Exception:  # noqa: BLE001 - never let a tool crash the request or leak internals
         logger.exception("Unexpected error executing tool %s", tool_name)
-        return {"success": False, "error": "The tool encountered an unexpected error."}
+        return {
+            "success": False,
+            "error": "The tool encountered an unexpected error.",
+            "error_code": error_codes.TOOL_UNEXPECTED_ERROR,
+        }
 
     if not isinstance(result, spec.output_model):
         try:
@@ -178,6 +193,7 @@ def dispatch_tool_call(
             return {
                 "success": False,
                 "error": f"The {tool_name!r} tool returned an unexpected response.",
+                "error_code": error_codes.TOOL_OUTPUT_INVALID,
             }
 
     return result.model_dump()

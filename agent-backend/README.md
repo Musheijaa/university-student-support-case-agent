@@ -93,11 +93,25 @@ curl -X POST http://127.0.0.1:8000/api/v1/support-tickets/DRAFT-001/approve \
   -H "X-User-Role: staff"
 ```
 
+## Observability and tracing
+
+Every agent run is traced end to end (model parameters, prompt version
+and hash, retrieved chunks with relevance scores, tool arguments and
+responses, per-iteration latency, error codes, terminal status). See
+`../docs/observability.md`.
+
+```bash
+LOG_FORMAT=json uvicorn main:app             # one JSON log line per agent step
+curl -H "X-User-Role: staff" \
+  http://127.0.0.1:8000/api/v1/agent/traces/<run_id>   # full trace for one run (staff only)
+python scripts/capture_observability_traces.py        # regenerate ../evidence/traces/observability/
+```
+
 ## Planned for later weeks
 
 - LangGraph-based agent orchestration
 - Persistent memory of an active support case
-- LangSmith observability/evaluation
+- LangSmith evaluation (tracing is now done in-house, see above)
 
 None of the above is implemented yet by design — see
 `../docs/architecture.md`, `../docs/tool-catalogue.md`,

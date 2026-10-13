@@ -124,6 +124,8 @@ class AgentStep:
     tool_result: dict | None = None
     observation: str | None = None
     error: str | None = None
+    error_code: str | None = None
+    latency_ms: float | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -145,6 +147,9 @@ class AgentState:
     sources: list[Source] = field(default_factory=list)
     drafted_ticket_ids: list[str] = field(default_factory=list)
     response: str = ""
+    error_code: str | None = None
+    # The full observability trace (observability/trace.py), set when the run ends.
+    trace: dict | None = None
 
     def transition_to(self, new_status: AgentStatus) -> "AgentState":
         """Attempt to transition run status. Rejects invalid transitions per Task 1."""
@@ -161,10 +166,11 @@ class AgentState:
         self.stage = stage_enum
         return self.stage
 
-    def stop(self, status: AgentStatus, response: str) -> "AgentState":
+    def stop(self, status: AgentStatus, response: str, error_code: str | None = None) -> "AgentState":
         """Transition to terminal status and record final response."""
         self.transition_to(status)
         self.response = response
+        self.error_code = error_code
         return self
 
     def add_step(self, step: AgentStep) -> None:
@@ -189,6 +195,7 @@ class AgentState:
             ],
             "drafted_ticket_ids": list(self.drafted_ticket_ids),
             "response": self.response,
+            "error_code": self.error_code,
         }
 
     @classmethod
@@ -203,6 +210,8 @@ class AgentState:
                 tool_result=s.get("tool_result"),
                 observation=s.get("observation"),
                 error=s.get("error"),
+                error_code=s.get("error_code"),
+                latency_ms=s.get("latency_ms"),
             )
             for s in data.get("steps", [])
         ]
@@ -227,5 +236,6 @@ class AgentState:
             sources=sources,
             drafted_ticket_ids=data.get("drafted_ticket_ids", []),
             response=data.get("response", ""),
+            error_code=data.get("error_code"),
         )
         return state

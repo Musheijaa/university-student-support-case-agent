@@ -75,6 +75,8 @@ class AgentStepResponse(BaseModel):
     tool_result: dict | None = None
     observation: str | None = None
     error: str | None = None
+    error_code: str | None = None
+    latency_ms: float | None = None
 
 
 class AgentRunResponse(BaseModel):
@@ -90,6 +92,8 @@ class AgentRunResponse(BaseModel):
     max_tool_calls: int
     prompt_version: str
     model: str
+    error_code: str | None = None
+    total_latency_ms: float | None = None
     steps: list[AgentStepResponse] = []
     sources: list[SourceResponse] = []
 

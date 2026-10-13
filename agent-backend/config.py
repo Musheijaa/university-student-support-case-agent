@@ -17,9 +17,16 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_name: str = "student-support-case-agent"
     log_level: str = "INFO"
+    # "text" for readable local logs, "json" for one JSON object per line
+    # (see observability/structured_logging.py).
+    log_format: str = "text"
 
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-20b"
+    llm_temperature: float = 0.2
+    llm_max_tokens: int = 1500
+    llm_timeout_seconds: float = 20.0
+    llm_max_retries: int = 2
 
     # Prompt version currently served by the API. Switching this constant
     # is how we move between Prompt V1, V2, the Week 3 RAG prompt, and
@@ -55,6 +62,11 @@ class Settings(BaseSettings):
     state_db_path: str = "data/session_state.db"
     case_history_db_path: str = "data/case_history.db"
     traces_db_path: str = "data/traces.db"
+
+    # Observability: every agent run's trace is exported here as
+    # <run_id>.json and <run_id>.md. Empty string disables file export
+    # (structured log lines are still emitted).
+    trace_export_dir: str = "data/traces"
 
     @property
     def groq_configured(self) -> bool:

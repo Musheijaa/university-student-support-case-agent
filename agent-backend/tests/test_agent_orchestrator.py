@@ -67,7 +67,7 @@ def _ticket_call(call_id="t1"):
 
 @pytest.fixture(autouse=True)
 def _no_real_retrieval(monkeypatch):
-    monkeypatch.setattr(orchestrator, "_retrieve_evidence", lambda message, settings: ("no evidence", []))
+    monkeypatch.setattr(orchestrator, "_retrieve", lambda message, settings: ([], []))
 
 
 @pytest.fixture
@@ -93,6 +93,7 @@ def settings(tmp_path):
         tickets_db_path=str(tmp_path / "tickets.db"),
         max_tool_calls=3,
         agent_max_iterations=4,
+        trace_export_dir=str(tmp_path / "traces"),
     )
 
 
