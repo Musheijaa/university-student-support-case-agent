@@ -4,6 +4,7 @@ Exposes:
   GET  /health                                        - liveness check, independent of the LLM provider
   POST /api/v1/student-support                        - RAG-grounded, tool-using student-support interaction
   POST /api/v1/agent/student-support                  - Week 5: bounded agent run with a full execution trace
+  GET  /api/v1/agent/traces/{run_id}                   - staff-only: the full observability trace for one run
   GET  /api/v1/support-tickets/{ticket_id}             - read a ticket's current state
   POST /api/v1/support-tickets/{ticket_id}/approve     - staff-only: PENDING_APPROVAL -> SUBMITTED
   POST /api/v1/support-tickets/{ticket_id}/reject      - staff-only: PENDING_APPROVAL -> REJECTED
@@ -23,6 +24,7 @@ only supplies context; it never triggers tool calls or bypasses limits.
 import logging
 import uuid
 from dataclasses import asdict
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +37,8 @@ from agent.state_store import get_session_state
 from agent.traces import get_memory_traces
 from auth import Actor, get_actor
 from config import get_settings
+from observability.export import is_valid_run_id, load_trace
+from observability.structured_logging import configure_logging
 from llm.service import (
     LLMConfigurationError,
     LLMRequestError,
@@ -57,8 +61,16 @@ from schemas import (
 )
 from tools import tickets
 
-logging.basicConfig(level=get_settings().log_level)
+configure_logging(level=get_settings().log_level, log_format=get_settings().log_format)
 logger = logging.getLogger(__name__)
+audit_logger = logging.getLogger("audit")
+
+
+def _audit(event: str, actor: Actor, **fields: Any) -> None:
+    """Structured audit line for human actions the agent cannot take itself."""
+    audit_logger.info(
+        event, extra={"trace_event": {"actor_role": actor.role, "actor_id": actor.user_id, **fields}}
+    )
 
 app = FastAPI(
     title="University Student-Support Case Agent API",
@@ -182,10 +194,6 @@ def agent_student_support(
         )
 
     contract = build_contract(settings)
-    logger.info(
-        "Agent run %s finished: status=%s iterations=%d tool_calls=%d",
-        state.run_id, state.status, state.iteration_count, state.tool_call_count,
-    )
     return AgentRunResponse(
         run_id=state.run_id,
         session_id=session_id,
@@ -199,12 +207,32 @@ def agent_student_support(
         max_tool_calls=contract.max_tool_calls,
         prompt_version=AGENT_PROMPT_VERSION,
         model=settings.groq_model,
+        error_code=state.error_code,
+        total_latency_ms=(state.trace or {}).get("total_latency_ms"),
         steps=[AgentStepResponse(**asdict(step)) for step in state.steps],
         sources=[
             SourceResponse(document_id=s.document_id, document=s.document, page=s.page)
             for s in state.sources
         ],
     )
+
+
+@app.get("/api/v1/agent/traces/{run_id}", tags=["agent"])
+def get_agent_trace(run_id: str, actor: Actor = Depends(get_actor)) -> dict[str, Any]:
+    # Traces hold the student's message and tool arguments, so only staff
+    # (the people auditing runs) may read them.
+    if actor.role != "staff":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only staff may read agent traces.",
+        )
+    if not is_valid_run_id(run_id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid run id.")
+    settings = get_settings()
+    trace = load_trace(settings.trace_export_dir, run_id) if settings.trace_export_dir else None
+    if trace is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Trace not found.")
+    return trace
 
 
 @app.get(
@@ -229,12 +257,14 @@ def approve_support_ticket(
     ticket_id: str, actor: Actor = Depends(get_actor)
 ) -> TicketActionResponse:
     if actor.role != "staff":
+        _audit("ticket.approve.denied", actor, ticket_id=ticket_id)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only staff may approve a support ticket.",
         )
     settings = get_settings()
     result = tickets.approve_ticket(ticket_id, db_path=settings.tickets_db_path)
+    _audit("ticket.approve", actor, **{"ticket_id": ticket_id, **result})
     return TicketActionResponse(**result)
 
 
@@ -247,12 +277,14 @@ def reject_support_ticket(
     ticket_id: str, actor: Actor = Depends(get_actor)
 ) -> TicketActionResponse:
     if actor.role != "staff":
+        _audit("ticket.reject.denied", actor, ticket_id=ticket_id)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only staff may reject a support ticket.",
         )
     settings = get_settings()
     result = tickets.reject_ticket(ticket_id, db_path=settings.tickets_db_path)
+    _audit("ticket.reject", actor, **{"ticket_id": ticket_id, **result})
     return TicketActionResponse(**result)
 
 

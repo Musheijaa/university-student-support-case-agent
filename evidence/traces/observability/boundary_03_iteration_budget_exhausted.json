@@ -1,0 +1,203 @@
+{
+  "schema_version": "trace-v1",
+  "run_id": "c4e1915a-fa21-4ae8-9308-37a896405cf7",
+  "started_at": "2026-10-13T10:04:56.609+00:00",
+  "ended_at": "2026-10-13T10:05:03.051+00:00",
+  "total_latency_ms": 6442.0,
+  "request": {
+    "message": "When is BSE4104 scheduled?",
+    "actor_role": "student",
+    "actor_id": "trace-capture"
+  },
+  "config": {
+    "model": {
+      "provider": "groq",
+      "name": "openai/gpt-oss-20b",
+      "temperature": 0.2,
+      "max_tokens": 1500,
+      "timeout_seconds": 20.0,
+      "max_retries": 2
+    },
+    "prompt": {
+      "version": "agent-v1.0",
+      "system_prompt_sha256": "ad291169d2e22039b38555c1499408ca77f259eb658fc970e641aad50d89814d",
+      "system_prompt_chars": 2256
+    },
+    "tools": {
+      "defined": [
+        "check_timetable",
+        "create_support_ticket"
+      ],
+      "definitions_sha256": "3b7ddb7be4e62ee58e2e1619159e5326515e21975cc04b81e48a6c1bd325e6f3"
+    },
+    "contract": {
+      "max_iterations": 1,
+      "max_tool_calls": 3,
+      "approved_tools": [
+        "check_timetable",
+        "create_support_ticket"
+      ]
+    },
+    "rag": {
+      "collection": "makerere_policy_docs",
+      "embedding_model": "chroma-default",
+      "top_k": 4,
+      "min_score": 0.35
+    },
+    "app": {
+      "name": "student-support-case-agent",
+      "env": "development"
+    }
+  },
+  "retrieval": {
+    "query": "When is BSE4104 scheduled?",
+    "top_k": 4,
+    "min_score": 0.35,
+    "latency_ms": 307.8,
+    "kept_count": 0,
+    "rejected_count": 4,
+    "chunks": [
+      {
+        "rank": 1,
+        "chunk_id": "DOC003-p19-c0",
+        "document_id": "DOC003",
+        "document": "Guidelines for Field Attachment",
+        "page": 19,
+        "relevance_score": 0.312,
+        "used_as_evidence": false,
+        "text_preview": "19 ANNEX VI: Weekly Summary of Work Performed No. Brief Description of Work Performed Hours Monday Tuesday Wednesday Thursday Friday Saturday Total Name and signature of field supervisor Date: Name a…"
+      },
+      {
+        "rank": 2,
+        "chunk_id": "DOC003-p18-c0",
+        "document_id": "DOC003",
+        "document": "Guidelines for Field Attachment",
+        "page": 18,
+        "relevance_score": 0.2862,
+        "used_as_evidence": false,
+        "text_preview": "18 ANNEX V: Sample Logbook (From Faculty of Technology) Daily Detailed Description of Work Sequence of operation for Job No. Operation Tool, Equipment etc. Signature of Field Supervisor"
+      },
+      {
+        "rank": 3,
+        "chunk_id": "DOC004-p32-c1",
+        "document_id": "DOC004",
+        "document": "Intellectual Property Management Policy",
+        "page": 32,
+        "relevance_score": 0.2458,
+        "used_as_evidence": false,
+        "text_preview": "ng and in a timely manner. 11.4.4. The Cr eator(s) should receive the written notification in a timely manner that enables the relevant Creator(s) to take any formal steps to ensure the protection of…"
+      },
+      {
+        "rank": 4,
+        "chunk_id": "DOC018-p4-c0",
+        "document_id": "DOC018",
+        "document": "Rules Concerning Examination Malpractices (Staff)",
+        "page": 4,
+        "relevance_score": 0.2425,
+        "used_as_evidence": false,
+        "text_preview": "(a) be reprimanded/warned or (c) After being warned for three time s he/she shall appear before the Appointments Board for appropriate disciplinary action. 4"
+      }
+    ]
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "started_at": "2026-10-13T10:04:56.975+00:00",
+      "latency_ms": 6075.9,
+      "decisions": [
+        "tool_call"
+      ],
+      "llm_call": {
+        "tools_offered": [
+          "check_timetable",
+          "create_support_ticket"
+        ],
+        "tool_choice": "auto",
+        "latency_ms": 6074.9,
+        "input_message_count": 2,
+        "provider_request_id": "chatcmpl-b7e4e129-d529-431f-8a92-0d2e43bac8fb",
+        "finish_reason": "tool_calls",
+        "usage": {
+          "prompt_tokens": 819,
+          "completion_tokens": 96,
+          "total_tokens": 915
+        },
+        "requested_tools": [
+          "check_timetable"
+        ],
+        "content_preview": null,
+        "error_code": null,
+        "error": null
+      },
+      "tool_calls": [
+        {
+          "tool_call_id": "fc_806271be-03aa-4cbc-8b51-85f638276cf8",
+          "tool_name": "check_timetable",
+          "arguments": {
+            "course_code": "BSE4104"
+          },
+          "approved": true,
+          "executed": true,
+          "latency_ms": 0.3,
+          "success": true,
+          "response": {
+            "success": true,
+            "course_code": "BSE4104",
+            "sessions": [
+              {
+                "date": "2026-09-24",
+                "start_time": "10:00",
+                "end_time": "12:00",
+                "venue": "Room 204"
+              },
+              {
+                "date": "2026-10-01",
+                "start_time": "10:00",
+                "end_time": "12:00",
+                "venue": "Room 204"
+              },
+              {
+                "date": "2026-10-08",
+                "start_time": "10:00",
+                "end_time": "12:00",
+                "venue": "Room 204"
+              }
+            ],
+            "error": null
+          },
+          "error_code": null,
+          "observation": "Found 3 timetable session(s) for BSE4104."
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": "AGENT_ITERATION_BUDGET_EXHAUSTED",
+      "stage": "contract",
+      "iteration": 1,
+      "message": "Maximum of 1 iteration(s) reached without a final answer.",
+      "at": "2026-10-13T10:05:03.051+00:00"
+    }
+  ],
+  "terminal": {
+    "status": "max_iterations_reached",
+    "error_code": "AGENT_ITERATION_BUDGET_EXHAUSTED",
+    "iteration_count": 1,
+    "tool_call_count": 1,
+    "drafted_ticket_ids": [],
+    "response": "I wasn't able to finish this request within my allowed number of steps. Please rephrase your question, or contact student support staff directly.",
+    "latency_breakdown_ms": {
+      "retrieval": 307.8,
+      "llm": 6074.9,
+      "tools": 0.3,
+      "orchestration_overhead": 59.0,
+      "total": 6442.0
+    },
+    "token_usage": {
+      "prompt_tokens": 819,
+      "completion_tokens": 96,
+      "total_tokens": 915
+    }
+  }
+}

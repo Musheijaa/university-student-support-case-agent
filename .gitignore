@@ -39,3 +39,6 @@ frontend/build/
 # Logs
 *.log
 agent-backend/data/sessions.db
+
+# Agent run traces (runtime audit output; curated evidence lives in evidence/traces/)
+agent-backend/data/traces/
