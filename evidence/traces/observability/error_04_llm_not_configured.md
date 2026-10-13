@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `738705ac-d4df-4bc5-a1c9-b0817a20e991` |
+| Run ID | `0b0f2207-4eeb-4ec1-a2eb-a6e4bc88c275` |
 | Terminal status | **`aborted`** |
 | Error code | `LLM_NOT_CONFIGURED` |
-| Started / ended | 2026-10-13T10:05:16.528+00:00 → 2026-10-13T10:05:16.529+00:00 |
-| Total latency | 1.0 ms |
+| Started / ended | 2026-10-13T10:13:20.733+00:00 → 2026-10-13T10:13:20.734+00:00 |
+| Total latency | 1.2 ms |
 | Iterations / tool calls | 0 / 0 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=20.0s, max_retries=2 |
@@ -39,7 +39,7 @@ _No iterations ran._
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 0.0 | 0 | 0 | 1.0 | 1.0 |
+| 0.0 | 0 | 0 | 1.2 | 1.2 |
 
 ## Final response
 

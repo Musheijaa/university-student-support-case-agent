@@ -10,16 +10,16 @@ for reviewers), and `<name>.log.jsonl` (the structured log lines emitted live du
 
 | Trace | Category | Terminal status | Error code | Iter / tools | Retrieval (used / candidates) | Total latency | Checks |
 |---|---|---|---|---|---|---|---|
-| [`normal_01_timetable_lookup`](normal_01_timetable_lookup.md) | normal | `completed` | — | 2 / 1 | 0 / 4 | 2017.8 ms | 10/10 |
-| [`normal_02_policy_question_rag`](normal_02_policy_question_rag.md) | normal | `completed` | — | 1 / 0 | 4 / 4 | 7288.8 ms | 10/10 |
-| [`normal_03_ticket_human_approval`](normal_03_ticket_human_approval.md) | normal | `human_approval_required` | — | 2 / 1 | 0 / 4 | 15302.6 ms | 10/10 |
-| [`boundary_01_self_approval_request`](boundary_01_self_approval_request.md) | boundary | `human_approval_required` | — | 2 / 1 | 4 / 4 | 23033.6 ms | 10/10 |
-| [`boundary_02_out_of_scope_question`](boundary_02_out_of_scope_question.md) | boundary | `completed` | — | 1 / 0 | 4 / 4 | 10747.6 ms | 10/10 |
-| [`boundary_03_iteration_budget_exhausted`](boundary_03_iteration_budget_exhausted.md) | boundary | `max_iterations_reached` | `AGENT_ITERATION_BUDGET_EXHAUSTED` | 1 / 1 | 0 / 4 | 6442.0 ms | 10/10 |
-| [`error_01_llm_timeout`](error_01_llm_timeout.md) | error | `llm_error` | `LLM_TIMEOUT` | 1 / 0 | 0 / 4 | 1079.2 ms | 10/10 |
-| [`error_02_llm_auth_rejected`](error_02_llm_auth_rejected.md) | error | `llm_error` | `LLM_HTTP_ERROR_401` | 1 / 0 | 0 / 4 | 672.8 ms | 10/10 |
-| [`error_03_tool_service_unavailable`](error_03_tool_service_unavailable.md) | error | `completed` | — | 2 / 1 | 0 / 4 | 12159.6 ms | 11/11 |
-| [`error_04_llm_not_configured`](error_04_llm_not_configured.md) | error | `aborted` | `LLM_NOT_CONFIGURED` | 0 / 0 | — | 1.0 ms | 10/10 |
+| [`normal_01_timetable_lookup`](normal_01_timetable_lookup.md) | normal | `completed` | — | 2 / 1 | 0 / 4 | 2006.0 ms | 10/10 |
+| [`normal_02_policy_question_rag`](normal_02_policy_question_rag.md) | normal | `completed` | — | 1 / 0 | 4 / 4 | 1276.1 ms | 10/10 |
+| [`normal_03_ticket_human_approval`](normal_03_ticket_human_approval.md) | normal | `human_approval_required` | — | 2 / 1 | 0 / 4 | 1413.8 ms | 10/10 |
+| [`boundary_01_self_approval_request`](boundary_01_self_approval_request.md) | boundary | `human_approval_required` | — | 2 / 1 | 4 / 4 | 1872.8 ms | 10/10 |
+| [`boundary_02_out_of_scope_question`](boundary_02_out_of_scope_question.md) | boundary | `completed` | — | 1 / 0 | 4 / 4 | 1066.3 ms | 10/10 |
+| [`boundary_03_iteration_budget_exhausted`](boundary_03_iteration_budget_exhausted.md) | boundary | `max_iterations_reached` | `AGENT_ITERATION_BUDGET_EXHAUSTED` | 1 / 1 | 0 / 4 | 1016.5 ms | 10/10 |
+| [`error_01_llm_timeout`](error_01_llm_timeout.md) | error | `llm_error` | `LLM_TIMEOUT` | 1 / 0 | 0 / 4 | 724.3 ms | 10/10 |
+| [`error_02_llm_auth_rejected`](error_02_llm_auth_rejected.md) | error | `llm_error` | `LLM_HTTP_ERROR_401` | 1 / 0 | 0 / 4 | 674.2 ms | 10/10 |
+| [`error_03_tool_service_unavailable`](error_03_tool_service_unavailable.md) | error | `completed` | — | 2 / 1 | 0 / 4 | 1706.5 ms | 11/11 |
+| [`error_04_llm_not_configured`](error_04_llm_not_configured.md) | error | `aborted` | `LLM_NOT_CONFIGURED` | 0 / 0 | — | 1.2 ms | 10/10 |
 
 ## Scenarios
 
@@ -37,10 +37,10 @@ Timetable question answered from one check_timetable call.
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=610.5ms, it2=676.3ms |
+| Latency recorded per iteration and LLM call | PASS | it1=648.6ms, it2=634.8ms |
 | Executed tools have arguments, response, latency | PASS | 1 executed / 1 requested |
 | Every failure carries an error code | PASS | codes: none |
-| Total latency recorded | PASS | 2017.8 ms |
+| Total latency recorded | PASS | 2006.0 ms |
 
 ### normal_02_policy_question_rag
 
@@ -56,10 +56,10 @@ Policy question answered from retrieved evidence (relevance scores above thresho
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 4 used |
-| Latency recorded per iteration and LLM call | PASS | it1=6922.2ms |
+| Latency recorded per iteration and LLM call | PASS | it1=902.5ms |
 | Executed tools have arguments, response, latency | PASS | 0 executed / 0 requested |
 | Every failure carries an error code | PASS | codes: none |
-| Total latency recorded | PASS | 7288.8 ms |
+| Total latency recorded | PASS | 1276.1 ms |
 
 ### normal_03_ticket_human_approval
 
@@ -75,10 +75,10 @@ Portal problem: agent drafts a ticket and hands over to staff.
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=6000.7ms, it2=8895.3ms |
+| Latency recorded per iteration and LLM call | PASS | it1=616.3ms, it2=434.2ms |
 | Executed tools have arguments, response, latency | PASS | 1 executed / 1 requested |
 | Every failure carries an error code | PASS | codes: none |
-| Total latency recorded | PASS | 15302.6 ms |
+| Total latency recorded | PASS | 1413.8 ms |
 
 ### boundary_01_self_approval_request
 
@@ -94,10 +94,10 @@ Student pushes the authority boundary: asks the agent to approve its own ticket.
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 4 used |
-| Latency recorded per iteration and LLM call | PASS | it1=13433.0ms, it2=9243.3ms |
+| Latency recorded per iteration and LLM call | PASS | it1=696.2ms, it2=751.4ms |
 | Executed tools have arguments, response, latency | PASS | 1 executed / 1 requested |
 | Every failure carries an error code | PASS | codes: none |
-| Total latency recorded | PASS | 23033.6 ms |
+| Total latency recorded | PASS | 1872.8 ms |
 
 ### boundary_02_out_of_scope_question
 
@@ -113,10 +113,10 @@ Out-of-scope question. The trace shows whether min_score kept off-topic chunks o
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 4 used |
-| Latency recorded per iteration and LLM call | PASS | it1=10393.4ms |
+| Latency recorded per iteration and LLM call | PASS | it1=692.4ms |
 | Executed tools have arguments, response, latency | PASS | 0 executed / 0 requested |
 | Every failure carries an error code | PASS | codes: none |
-| Total latency recorded | PASS | 10747.6 ms |
+| Total latency recorded | PASS | 1066.3 ms |
 
 ### boundary_03_iteration_budget_exhausted
 
@@ -134,10 +134,10 @@ Configuration overrides: `{"agent_max_iterations": 1}`
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=6075.9ms |
+| Latency recorded per iteration and LLM call | PASS | it1=648.7ms |
 | Executed tools have arguments, response, latency | PASS | 1 executed / 1 requested |
 | Every failure carries an error code | PASS | codes: ['AGENT_ITERATION_BUDGET_EXHAUSTED'] |
-| Total latency recorded | PASS | 6442.0 ms |
+| Total latency recorded | PASS | 1016.5 ms |
 
 ### error_01_llm_timeout
 
@@ -155,10 +155,10 @@ Configuration overrides: `{"llm_timeout_seconds": 0.2, "llm_max_retries": 0}`
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=326.8ms |
+| Latency recorded per iteration and LLM call | PASS | it1=349.5ms |
 | Executed tools have arguments, response, latency | PASS | 0 executed / 0 requested |
 | Every failure carries an error code | PASS | codes: ['LLM_TIMEOUT'] |
-| Total latency recorded | PASS | 1079.2 ms |
+| Total latency recorded | PASS | 724.3 ms |
 
 ### error_02_llm_auth_rejected
 
@@ -176,10 +176,10 @@ Configuration overrides: `{"groq_api_key": "<invalid key>", "llm_max_retries": 0
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=247.0ms |
+| Latency recorded per iteration and LLM call | PASS | it1=264.0ms |
 | Executed tools have arguments, response, latency | PASS | 0 executed / 0 requested |
 | Every failure carries an error code | PASS | codes: ['LLM_HTTP_ERROR_401'] |
-| Total latency recorded | PASS | 672.8 ms |
+| Total latency recorded | PASS | 674.2 ms |
 
 ### error_03_tool_service_unavailable
 
@@ -197,10 +197,10 @@ Configuration overrides: `{"timetable_data_path": "data/timetable/does-not-exist
 | Model parameters recorded | PASS | openai/gpt-oss-20b t=0.2 max_tokens=1500 |
 | Prompt version + fingerprint recorded | PASS | agent-v1.0 |
 | Retrieved chunks have relevance scores | PASS | 4 candidate(s), 0 used |
-| Latency recorded per iteration and LLM call | PASS | it1=5801.4ms, it2=5993.0ms |
+| Latency recorded per iteration and LLM call | PASS | it1=686.6ms, it2=638.3ms |
 | Executed tools have arguments, response, latency | PASS | 1 executed / 1 requested |
 | Every failure carries an error code | PASS | codes: ['TOOL_DATA_UNAVAILABLE'] |
-| Total latency recorded | PASS | 12159.6 ms |
+| Total latency recorded | PASS | 1706.5 ms |
 | Expected error codes logged | PASS | expected ['TOOL_DATA_UNAVAILABLE'] |
 
 ### error_04_llm_not_configured
@@ -222,7 +222,7 @@ Configuration overrides: `{"groq_api_key": ""}`
 | Latency recorded per iteration and LLM call | PASS | no iterations |
 | Executed tools have arguments, response, latency | PASS | 0 executed / 0 requested |
 | Every failure carries an error code | PASS | codes: ['LLM_NOT_CONFIGURED'] |
-| Total latency recorded | PASS | 1.0 ms |
+| Total latency recorded | PASS | 1.2 ms |
 
 ## Regenerating
 
@@ -232,4 +232,4 @@ From `agent-backend/`, with `GROQ_API_KEY` set:
 python scripts/capture_observability_traces.py
 ```
 
-Ticket drafts go to a throwaway SQLite file, so the real `data/tickets.db` is untouched.
+Ticket drafts, session state and case history go to throwaway SQLite files, so the real `data/*.db` stores are untouched.

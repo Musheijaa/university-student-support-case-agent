@@ -207,6 +207,9 @@ def capture(name: str, scenario: dict, base: Settings, workdir: Path) -> tuple[d
     settings = base.model_copy(
         update={
             "tickets_db_path": str(workdir / "tickets.db"),
+            "state_db_path": str(workdir / "session_state.db"),
+            "case_history_db_path": str(workdir / "case_history.db"),
+            "traces_db_path": str(workdir / "memory_traces.db"),
             "trace_export_dir": str(export_dir),
             **scenario.get("overrides", {}),
         }
@@ -307,7 +310,7 @@ def write_index() -> None:
         "python scripts/capture_observability_traces.py",
         "```",
         "",
-        "Ticket drafts go to a throwaway SQLite file, so the real `data/tickets.db` is untouched.",
+        "Ticket drafts, session state and case history go to throwaway SQLite files, so the real `data/*.db` stores are untouched.",
         "",
     ]
     (OUTPUT_DIR / "README.md").write_text("\n".join(lines), encoding="utf-8")

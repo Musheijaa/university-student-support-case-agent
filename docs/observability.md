@@ -183,12 +183,12 @@ as Markdown, and as the JSONL log stream emitted during the run. The
 index runs an observability-completeness checklist against every trace,
 and all pass.
 
-`agent-backend/tests/test_observability.py` (25 tests) covers the same
+`agent-backend/tests/test_observability.py` (26 tests) covers the same
 paths deterministically with a scripted model.
 
 ## 8. What the traces have already shown
 
-The first capture surfaced issues that the Week 5 step list could not
+The captures surfaced issues that the Week 5 step list could not
 show:
 
 1. **`rag_min_score = 0.35` is too permissive.** The out-of-scope
@@ -200,18 +200,25 @@ show:
    (`normal_02`), and timetable questions top out around 0.31, so a
    threshold of roughly 0.5 looks better supported. This should be
    re-evaluated against `docs/rag-evaluation.md` before changing it.
-2. **Retrieval missed the chunk the answer needed.** In `normal_02`, all
-   four chunks came from the right document (pages 2, 3, 5, 6 of the
-   malpractice rules, scores 0.58–0.70). Even so, the model reported that
-   the penalty for Rule 4 wasn't in the evidence. The trace makes this
-   checkable: either the page holding Rule 4's penalty ranked below
-   top-k 4, or chunking split the rule from its penalty.
-3. **Latency is almost entirely the model.** Across the successful runs,
-   retrieval took about 300–650 ms, tools under 7 ms, and orchestration
-   about 50 ms. LLM calls took 1.3–22.7 s: 94–98% of total time in
-   every run except the fastest (`normal_01`, 64%). Speed
-   work should target the model call (smaller prompts, fewer iterations,
-   streaming), not retrieval or tools.
+2. **Same evidence, different answer.** `normal_02` was captured twice
+   (before and after rebasing onto the Week 6/7 code). Both runs
+   retrieved the same four chunks with identical scores (pages 2, 5, 6, 3
+   of the malpractice rules, 0.58–0.70). The first run told the student
+   the excerpts "do not include the specific penalties". The second quoted the Rule 5
+   penalty correctly. With identical retrieval, the variance comes from
+   the model itself (temperature 0.2), not from RAG. Without the
+   recorded scores and chunk ids, this would have looked like a
+   retrieval bug. Evaluation runs should use several samples per
+   question, or temperature 0.
+3. **Model latency is the largest and least stable cost.** In the
+   committed traces, LLM calls take 0.6–1.4 s, 62–75% of each successful
+   run. In the first capture the same scenarios took 1.3–22.7 s, so
+   provider-side variance dwarfs everything else. Retrieval is a steady
+   300–630 ms. Tools take under 8 ms. Orchestration overhead rose from
+   about 50 ms to 80–140 ms after the Week 6 state store was merged,
+   which persists session state to SQLite at every stage transition.
+   That is still small, but it is now measurable, and batching those
+   writes would be the fix if it grows.
 4. **The 1 ms timeout was really a connection error.** Our first fault
    injection of a 1 ms timeout came back as `LLM_CONNECTION_ERROR`, not
    `LLM_TIMEOUT`, because the socket never connected. A back-to-back

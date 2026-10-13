@@ -1,9 +1,9 @@
 {
   "schema_version": "trace-v1",
-  "run_id": "88746d86-94ae-42c3-9dff-d4e0354d2688",
-  "started_at": "2026-10-13T10:05:04.362+00:00",
-  "ended_at": "2026-10-13T10:05:16.522+00:00",
-  "total_latency_ms": 12159.6,
+  "run_id": "a51d7352-41c0-4b39-a899-46ccb1cb3f02",
+  "started_at": "2026-10-13T10:13:14.018+00:00",
+  "ended_at": "2026-10-13T10:13:15.725+00:00",
+  "total_latency_ms": 1706.5,
   "request": {
     "message": "When is BSE4104 scheduled?",
     "actor_role": "student",
@@ -53,7 +53,7 @@
     "query": "When is BSE4104 scheduled?",
     "top_k": 4,
     "min_score": 0.35,
-    "latency_ms": 310.3,
+    "latency_ms": 306.8,
     "kept_count": 0,
     "rejected_count": 4,
     "chunks": [
@@ -102,8 +102,8 @@
   "iterations": [
     {
       "iteration": 1,
-      "started_at": "2026-10-13T10:05:04.727+00:00",
-      "latency_ms": 5801.4,
+      "started_at": "2026-10-13T10:13:14.399+00:00",
+      "latency_ms": 686.6,
       "decisions": [
         "tool_call"
       ],
@@ -113,14 +113,14 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 5799.9,
+        "latency_ms": 670.0,
         "input_message_count": 2,
-        "provider_request_id": "chatcmpl-38a15343-b31f-4817-bca9-03bfae92eb88",
+        "provider_request_id": "chatcmpl-82784f20-ca46-48c2-a297-adb237fa8c97",
         "finish_reason": "tool_calls",
         "usage": {
           "prompt_tokens": 819,
-          "completion_tokens": 126,
-          "total_tokens": 945
+          "completion_tokens": 62,
+          "total_tokens": 881
         },
         "requested_tools": [
           "check_timetable"
@@ -131,14 +131,14 @@
       },
       "tool_calls": [
         {
-          "tool_call_id": "fc_cbe6a2a5-5bca-4aec-ae0a-a3e55a4474c8",
+          "tool_call_id": "fc_88715c49-5f86-4372-88e4-2850d0572ca6",
           "tool_name": "check_timetable",
           "arguments": {
             "course_code": "BSE4104"
           },
           "approved": true,
           "executed": true,
-          "latency_ms": 0.4,
+          "latency_ms": 0.1,
           "success": false,
           "response": {
             "success": false,
@@ -152,8 +152,8 @@
     },
     {
       "iteration": 2,
-      "started_at": "2026-10-13T10:05:10.528+00:00",
-      "latency_ms": 5993.0,
+      "started_at": "2026-10-13T10:13:15.086+00:00",
+      "latency_ms": 638.3,
       "decisions": [
         "final_answer"
       ],
@@ -163,17 +163,17 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 5992.5,
+        "latency_ms": 614.8,
         "input_message_count": 4,
-        "provider_request_id": "chatcmpl-76666f19-c13c-4020-b80d-ebc6923c78e6",
+        "provider_request_id": "chatcmpl-c3332c4d-c911-4915-8ce5-5186803a6f93",
         "finish_reason": "stop",
         "usage": {
           "prompt_tokens": 882,
-          "completion_tokens": 137,
-          "total_tokens": 1019
+          "completion_tokens": 148,
+          "total_tokens": 1030
         },
         "requested_tools": [],
-        "content_preview": "I’m sorry, but I couldn’t retrieve the timetable for BSE4104 at this time. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.",
+        "content_preview": "I’m sorry, but I couldn’t retrieve the timetable for BSE4104. The timetable service is currently unavailable. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.",
         "error_code": null,
         "error": null
       },
@@ -186,7 +186,7 @@
       "stage": "tool",
       "iteration": 1,
       "message": "The timetable service is temporarily unavailable. Please try again later.",
-      "at": "2026-10-13T10:05:10.528+00:00"
+      "at": "2026-10-13T10:13:15.075+00:00"
     }
   ],
   "terminal": {
@@ -195,18 +195,18 @@
     "iteration_count": 2,
     "tool_call_count": 1,
     "drafted_ticket_ids": [],
-    "response": "I’m sorry, but I couldn’t retrieve the timetable for BSE4104 at this time. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.",
+    "response": "I’m sorry, but I couldn’t retrieve the timetable for BSE4104. The timetable service is currently unavailable. Please try again later or contact the registrar’s office for the most up‑to‑date schedule.",
     "latency_breakdown_ms": {
-      "retrieval": 310.3,
-      "llm": 11792.4,
-      "tools": 0.4,
-      "orchestration_overhead": 56.5,
-      "total": 12159.6
+      "retrieval": 306.8,
+      "llm": 1284.8,
+      "tools": 0.1,
+      "orchestration_overhead": 114.8,
+      "total": 1706.5
     },
     "token_usage": {
       "prompt_tokens": 1701,
-      "completion_tokens": 263,
-      "total_tokens": 1964
+      "completion_tokens": 210,
+      "total_tokens": 1911
     }
   }
 }

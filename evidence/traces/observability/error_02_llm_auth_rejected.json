@@ -1,9 +1,9 @@
 {
   "schema_version": "trace-v1",
-  "run_id": "a32805ce-62e4-4c12-839b-a82224606866",
-  "started_at": "2026-10-13T10:05:03.680+00:00",
-  "ended_at": "2026-10-13T10:05:04.353+00:00",
-  "total_latency_ms": 672.8,
+  "run_id": "472f95af-21c9-4d13-b427-d70e728af33e",
+  "started_at": "2026-10-13T10:13:08.337+00:00",
+  "ended_at": "2026-10-13T10:13:09.011+00:00",
+  "total_latency_ms": 674.2,
   "request": {
     "message": "When is BSE4104 scheduled?",
     "actor_role": "student",
@@ -53,7 +53,7 @@
     "query": "When is BSE4104 scheduled?",
     "top_k": 4,
     "min_score": 0.35,
-    "latency_ms": 382.9,
+    "latency_ms": 338.5,
     "kept_count": 0,
     "rejected_count": 4,
     "chunks": [
@@ -102,8 +102,8 @@
   "iterations": [
     {
       "iteration": 1,
-      "started_at": "2026-10-13T10:05:04.106+00:00",
-      "latency_ms": 247.0,
+      "started_at": "2026-10-13T10:13:08.747+00:00",
+      "latency_ms": 264.0,
       "decisions": [
         "error"
       ],
@@ -113,7 +113,7 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 246.5,
+        "latency_ms": 241.7,
         "input_message_count": 2,
         "provider_request_id": null,
         "finish_reason": null,
@@ -132,7 +132,7 @@
       "stage": "llm",
       "iteration": 1,
       "message": "The model provider returned an error.",
-      "at": "2026-10-13T10:05:04.352+00:00"
+      "at": "2026-10-13T10:13:08.993+00:00"
     }
   ],
   "terminal": {
@@ -143,11 +143,11 @@
     "drafted_ticket_ids": [],
     "response": "The assistant is temporarily unable to reach its language model. Please try again shortly.",
     "latency_breakdown_ms": {
-      "retrieval": 382.9,
-      "llm": 246.5,
+      "retrieval": 338.5,
+      "llm": 241.7,
       "tools": 0,
-      "orchestration_overhead": 43.4,
-      "total": 672.8
+      "orchestration_overhead": 94.0,
+      "total": 674.2
     },
     "token_usage": {
       "prompt_tokens": 0,

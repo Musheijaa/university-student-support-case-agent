@@ -1,9 +1,9 @@
 {
   "schema_version": "trace-v1",
-  "run_id": "d2d56300-1db3-4a3b-baa4-ad564e6482c8",
-  "started_at": "2026-10-13T10:03:58.187+00:00",
-  "ended_at": "2026-10-13T10:04:00.205+00:00",
-  "total_latency_ms": 2017.8,
+  "run_id": "71978c25-a6cd-409c-ac5b-b9d969670cf5",
+  "started_at": "2026-10-13T10:12:23.920+00:00",
+  "ended_at": "2026-10-13T10:12:25.926+00:00",
+  "total_latency_ms": 2006.0,
   "request": {
     "message": "When is BSE4104 scheduled?",
     "actor_role": "student",
@@ -53,7 +53,7 @@
     "query": "When is BSE4104 scheduled?",
     "top_k": 4,
     "min_score": 0.35,
-    "latency_ms": 644.7,
+    "latency_ms": 626.7,
     "kept_count": 0,
     "rejected_count": 4,
     "chunks": [
@@ -102,8 +102,8 @@
   "iterations": [
     {
       "iteration": 1,
-      "started_at": "2026-10-13T10:03:58.918+00:00",
-      "latency_ms": 610.5,
+      "started_at": "2026-10-13T10:12:24.642+00:00",
+      "latency_ms": 648.6,
       "decisions": [
         "tool_call"
       ],
@@ -113,14 +113,14 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 609.4,
+        "latency_ms": 626.1,
         "input_message_count": 2,
-        "provider_request_id": "chatcmpl-91b35a5b-2992-455b-83c1-223da0b46b17",
+        "provider_request_id": "chatcmpl-965d7886-d6f0-4994-ab62-9b64684f5e1e",
         "finish_reason": "tool_calls",
         "usage": {
           "prompt_tokens": 819,
-          "completion_tokens": 66,
-          "total_tokens": 885
+          "completion_tokens": 94,
+          "total_tokens": 913
         },
         "requested_tools": [
           "check_timetable"
@@ -131,14 +131,14 @@
       },
       "tool_calls": [
         {
-          "tool_call_id": "fc_1b601709-5770-4d4a-8b2c-91c5ac434930",
+          "tool_call_id": "fc_725efdfc-8be6-4cf2-8252-283f7b839bc4",
           "tool_name": "check_timetable",
           "arguments": {
             "course_code": "BSE4104"
           },
           "approved": true,
           "executed": true,
-          "latency_ms": 0.4,
+          "latency_ms": 0.2,
           "success": true,
           "response": {
             "success": true,
@@ -172,8 +172,8 @@
     },
     {
       "iteration": 2,
-      "started_at": "2026-10-13T10:03:59.529+00:00",
-      "latency_ms": 676.3,
+      "started_at": "2026-10-13T10:12:25.291+00:00",
+      "latency_ms": 634.8,
       "decisions": [
         "final_answer"
       ],
@@ -183,17 +183,17 @@
           "create_support_ticket"
         ],
         "tool_choice": "auto",
-        "latency_ms": 675.8,
+        "latency_ms": 610.2,
         "input_message_count": 4,
-        "provider_request_id": "chatcmpl-6b97e440-4355-46a3-99ba-3d4badbf4bd5",
+        "provider_request_id": "chatcmpl-9e2cf095-72f8-466e-9f45-59146dcbdc66",
         "finish_reason": "stop",
         "usage": {
           "prompt_tokens": 985,
-          "completion_tokens": 196,
-          "total_tokens": 1181
+          "completion_tokens": 191,
+          "total_tokens": 1176
         },
         "requested_tools": [],
-        "content_preview": "BSE4104 meets on the following dates: | Date | Time | Venue | |------|------|-------| | 2026‑09‑24 | 10:00 – 12:00 | Room 204 | | 2026‑10‑01 | 10:00 – 12:00 | Room 204 | | 2026‑10‑08 | 10:00 – 12:00 …",
+        "content_preview": "**BSE4104** meets on the following dates: | Date | Time | Venue | |------|------|-------| | 24 Sep 2026 | 10:00 – 12:00 | Room 204 | | 01 Oct 2026 | 10:00 – 12:00 | Room 204 | | 08 Oct 2026 | 10:00 –…",
         "error_code": null,
         "error": null
       },
@@ -207,18 +207,18 @@
     "iteration_count": 2,
     "tool_call_count": 1,
     "drafted_ticket_ids": [],
-    "response": "BSE4104 meets on the following dates:\n\n| Date | Time | Venue |\n|------|------|-------|\n| 2026‑09‑24 | 10:00 – 12:00 | Room 204 |\n| 2026‑10‑01 | 10:00 – 12:00 | Room 204 |\n| 2026‑10‑08 | 10:00 – 12:00 | Room 204 |\n\nThese are the scheduled sessions for the course.",
+    "response": "**BSE4104** meets on the following dates:\n\n| Date | Time | Venue |\n|------|------|-------|\n| 24 Sep 2026 | 10:00 – 12:00 | Room 204 |\n| 01 Oct 2026 | 10:00 – 12:00 | Room 204 |\n| 08 Oct 2026 | 10:00 – 12:00 | Room 204 |\n\nThese are the scheduled sessions for the course.",
     "latency_breakdown_ms": {
-      "retrieval": 644.7,
-      "llm": 1285.2,
-      "tools": 0.4,
-      "orchestration_overhead": 87.5,
-      "total": 2017.8
+      "retrieval": 626.7,
+      "llm": 1236.3,
+      "tools": 0.2,
+      "orchestration_overhead": 142.8,
+      "total": 2006.0
     },
     "token_usage": {
       "prompt_tokens": 1804,
-      "completion_tokens": 262,
-      "total_tokens": 2066
+      "completion_tokens": 285,
+      "total_tokens": 2089
     }
   }
 }

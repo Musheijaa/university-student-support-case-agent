@@ -2,18 +2,18 @@
 
 | Field | Value |
 |---|---|
-| Run ID | `b9f98527-3f04-4e49-9e46-cc451db57a40` |
+| Run ID | `4de9cd8a-8cce-45ae-919e-4699db77856d` |
 | Terminal status | **`completed`** |
 | Error code | — |
-| Started / ended | 2026-10-13T10:04:45.856+00:00 → 2026-10-13T10:04:56.604+00:00 |
-| Total latency | 10747.6 ms |
+| Started / ended | 2026-10-13T10:12:50.515+00:00 → 2026-10-13T10:12:51.582+00:00 |
+| Total latency | 1066.3 ms |
 | Iterations / tool calls | 1 / 0 |
 | Model | `openai/gpt-oss-20b` via groq |
 | Model parameters | temperature=0.2, max_tokens=1500, timeout=20.0s, max_retries=2 |
 | Prompt version | `agent-v1.0` (system prompt sha256 `ad291169d2e2…`) |
 | Tool definitions sha256 | `3b7ddb7be4e6…` |
 | Contract budget | 4 iteration(s), 3 tool call(s); approved: check_timetable, create_support_ticket |
-| Tokens (prompt / completion / total) | 2015 / 185 / 2200 |
+| Tokens (prompt / completion / total) | 2015 / 158 / 2173 |
 
 ## Request
 
@@ -23,7 +23,7 @@
 
 ## Context: retrieval
 
-top_k=4, min_score=0.35, latency=300.0 ms — **4 used as evidence, 0 below threshold**
+top_k=4, min_score=0.35, latency=303.3 ms — **4 used as evidence, 0 below threshold**
 
 | Rank | Score | Used | Document | Page | Text preview |
 |---|---|---|---|---|---|
@@ -34,19 +34,19 @@ top_k=4, min_score=0.35, latency=300.0 ms — **4 used as evidence, 0 below thre
 
 ## Iterations
 
-### Iteration 1 — final_answer (10393.4 ms)
+### Iteration 1 — final_answer (692.4 ms)
 
 | LLM call | Value |
 |---|---|
-| Latency | 10392.9 ms |
+| Latency | 676.5 ms |
 | Tools offered / tool_choice | check_timetable, create_support_ticket / `auto` |
 | Input messages | 2 |
 | Finish reason | `stop` |
-| Tokens (prompt / completion) | 2015 / 185 |
-| Provider request id | `chatcmpl-40928cbe-b0b4-4f3f-a541-0c8a4908bff7` |
+| Tokens (prompt / completion) | 2015 / 158 |
+| Provider request id | `chatcmpl-b19815c2-e2de-4b3b-a963-5a7bf5ebd2c2` |
 | Requested tools | none |
 | Error code | — |
-| Content preview | I’m sorry, but the evidence provided does not contain any information about restaurants or breakfast items in Kampala, so I can’t answer that question. |
+| Content preview | I’m sorry, but the information you provided is about university admissions and course listings, and it doesn’t contain any details about restaurants or food in Kampala. I don’t have any reliable sour… |
 
 ## Errors
 
@@ -56,8 +56,8 @@ _None._
 
 | Retrieval | LLM | Tools | Orchestration overhead | Total |
 |---|---|---|---|---|
-| 300.0 | 10392.9 | 0 | 54.7 | 10747.6 |
+| 303.3 | 676.5 | 0 | 86.5 | 1066.3 |
 
 ## Final response
 
-I’m sorry, but the evidence provided does not contain any information about restaurants or breakfast items in Kampala, so I can’t answer that question.
+I’m sorry, but the information you provided is about university admissions and course listings, and it doesn’t contain any details about restaurants or food in Kampala. I don’t have any reliable source to answer that question.
