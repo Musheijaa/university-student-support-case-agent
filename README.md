@@ -100,6 +100,9 @@ This prototype intentionally excludes:
 - `docs/architecture.md` — Week 4: current system architecture and the Week 2→3→4 progression
 - `docs/tool-catalogue.md` — Week 4: tool schemas, authorization, and failure behavior
 - `docs/tool-test-evidence.md` — Week 4: real test results for every failure/authorization scenario
+- `docs/agent-task-contract.md`, `docs/agent-architecture.md` — Week 5: bounded agent goal, approved tools, limits, and terminal statuses
+- `docs/memory-design.md`, `docs/interoperability.md` — Week 6: memory/state data-handling spec and the MCP-style interface spec for `check_timetable`
+- `docs/evaluation.md`, `docs/guardrails.md`, `docs/failure-catalogue.md` — Week 7: 39-scenario evaluation benchmark, code-level guardrails, and six documented real failures with fixes
 - `prompts/` — prompt and workflow notes
 - `knowledge/` — approved project knowledge sources
 - `agent-backend/` — FastAPI backend and LLM integration (see `agent-backend/README.md`); includes `agent-backend/tests/`
@@ -107,21 +110,21 @@ This prototype intentionally excludes:
 - `evidence/` — screenshots and traces
 - `demo/` — demonstration materials
 
-## Development Status
-Week 1 planning and requirement framing are complete and documented in the repository. Week 2 added a working foundation-model baseline: a FastAPI backend that sends student questions to an external LLM (Groq) through a versioned prompt and returns a structured response. Week 3 added retrieval-augmented generation (RAG): the same endpoint answers from a controlled corpus of Makerere University policy documents (`docs/makerereUniversityPolicyDocs/`), returning the sources each answer is grounded in. Week 4 adds explicit tool calling: the model can request a `check_timetable` or `create_support_ticket` tool, executed by the application (never the model) after validation and authorization, with ticket submission requiring a separate human-approval step. The project is intentionally scoped for an 8-week academic execution and does not claim production deployment or live institutional integration.
+## Development Status — v1.0.0
 
-## Week 2/3/4: Running the Backend
+All 8 weeks are complete. Week 1: planning and requirements. Week 2: a foundation-model baseline (Groq + versioned prompts). Week 3: retrieval-augmented generation over a controlled Makerere policy corpus, with cited sources. Week 4: explicit tool calling (`check_timetable`, `create_support_ticket`) executed by the application, never the model, with a separate human-approval step for ticket submission. Week 5: a bounded multi-step agent (plan→act→observe) that stops at one of six terminal statuses, built on the same tools. Week 6: bounded per-session memory (one prior turn, 24h TTL) and a privacy-filtered case-history store, both decoupled from — and unable to override — the agent's execution budgets or approval boundary. Week 7: a 39-scenario evaluation benchmark, documented code-level guardrails, and a failure catalogue of six genuine issues found and fixed during development. Week 8 (this release): hardening, the final README, and the `v1.0.0` tag.
 
-The backend is a FastAPI app in `agent-backend/` (flat layout —
-`main.py` sits directly in that folder, not nested under `src/`) with:
+This is an academic capstone prototype. It does not claim production deployment or live institutional integration, and uses only synthetic/public data (see `docs/corpus-source-register.md` and the data-handling notes in `docs/memory-design.md`).
 
-- `GET /health` — liveness check, independent of the LLM provider.
-- `POST /api/v1/student-support` — retrieves relevant evidence from the ingested policy corpus, offers the model `check_timetable`/`create_support_ticket` tools (see `docs/tool-catalogue.md`), and returns the answer plus sources and any tool calls made.
-- `GET /api/v1/support-tickets/{id}` and `POST .../approve` / `.../reject` — staff-only ticket approval, never reachable by the model itself.
+## Running the System
 
-It intentionally does **not** yet include case memory or agent orchestration — those are planned for later weeks (see `agent-backend/README.md`).
+The backend is a FastAPI app in `agent-backend/` (flat layout — `main.py` sits directly in that folder, not nested under `src/`).
 
-A `frontend/` folder holds a minimal React (Vite) test console — a chat UI that renders sources, timetable results, and support-ticket drafts (with staff approve/reject controls). See [Frontend](#frontend) below.
+### Prerequisites
+
+- Python 3.11+ (tested on 3.13)
+- Node.js 18+ and npm (only needed for the frontend)
+- A free [Groq API key](https://console.groq.com) (the backend runs without one, but every LLM-backed endpoint returns `503` until it's set)
 
 ### 1. Clone the project
 
@@ -146,30 +149,25 @@ pip install -r requirements.txt
 
 ### 4. Configure environment variables
 
-Copy the example file and fill in a real Groq API key locally (never commit it):
-
 ```bash
 cp .env.example .env
 ```
 
-Then edit `.env` and set:
+Edit `.env` and set at minimum:
 
 ```env
 GROQ_API_KEY=your-real-key-here
-GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-Get a key from https://console.groq.com. Without a configured key, the API still runs and `/health` still works, but `/api/v1/student-support` returns `503`.
+Every other variable in `.env.example` has a working default — see the comments in that file for what each one does (RAG, tools, agent budgets, memory/state/case-history, all grouped by the week that introduced them). Never commit a real `.env` — it's already gitignored.
 
-### 5. Build the RAG index (Week 3, one-time)
-
-Run from inside `agent-backend/`, after installing dependencies:
+### 5. Build the RAG index (one-time, re-run if the corpus changes)
 
 ```bash
 python ingest.py
 ```
 
-This extracts, chunks, and embeds `docs/makerereUniversityPolicyDocs/` into a local Chroma index at `agent-backend/data/chroma/` (gitignored — re-run this after cloning or whenever the corpus changes; it's safe to re-run). The first run downloads a small local embedding model (~80MB, cached afterward — no API key needed for this step).
+Extracts, chunks, and embeds `docs/makerereUniversityPolicyDocs/` into a local Chroma index at `agent-backend/data/chroma/` (gitignored, regenerable, safe to re-run). The first run downloads a small local embedding model (~80MB, cached afterward — no API key needed for this step). Without it, the API still runs, but knowledge questions correctly report "no sufficiently relevant sources were found" instead of answering.
 
 ### 6. Start the backend
 
@@ -179,64 +177,96 @@ uvicorn main:app --reload
 
 ### 7. Open the interactive API docs
 
-Visit http://127.0.0.1:8000/docs (Swagger/OpenAPI UI) to try both endpoints from the browser.
+Visit http://127.0.0.1:8000/docs (Swagger/OpenAPI UI) to try every endpoint from the browser.
 
-### 8. Test `/health`
-
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-Expected: `{"status":"ok"}`
-
-### 9. Test `/api/v1/student-support`
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/student-support \
-  -H "Content-Type: application/json" \
-  -d '{"message": "What counts as examination malpractice at Makerere?"}'
-```
-
-Expected (once `GROQ_API_KEY` is set and the index is built): a JSON body with `response`, `prompt_version` ("rag-v1.0"), `model`, and a `sources` array listing the document(s)/page(s) the answer was grounded in.
-
-### 10. Run the automated tests
-
-Run from inside `agent-backend/`:
+### 8. Run the automated tests
 
 ```bash
 pytest -v
 ```
 
+Expected: **178 passed**. The suite mocks the Groq API boundary, so it runs without a real key. One explicitly opt-in real-API test (`tests/test_integration_groq.py`) is skipped unless `GROQ_API_KEY` is configured — that's expected, not a failure.
+
+### API endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/health` | GET | Liveness check, independent of the LLM provider |
+| `/api/v1/student-support` | POST | RAG-grounded answer; model may also request a tool directly (single round-trip, no multi-step planning) |
+| `/api/v1/agent/student-support` | POST | **The full bounded agent** (Week 5): plan→act→observe loop over the same tools, stops at one of six terminal statuses (`completed`, `human_approval_required`, `max_iterations_reached`, `max_tool_calls_reached`, `tool_not_approved`, `llm_error`). Pass `X-Session-Id: <any string>` and `X-Memory: on` to enable one-prior-turn memory for that session. |
+| `/api/v1/support-tickets/{id}` | GET | Read a ticket's current state |
+| `/api/v1/support-tickets/{id}/approve` / `/reject` | POST | **Staff-only.** `PENDING_APPROVAL` → `SUBMITTED`/`REJECTED`. Not reachable by the model under any circumstances. |
+| `/api/v1/cases/{student_id}` | GET / DELETE | Read or permanently delete a student's case-history (privacy-filtered summary fields only — see `docs/memory-design.md`) |
+| `/api/v1/sessions/{run_id}` | GET | Read a persisted agent run's full state/step trace (keyed by the `run_id` returned in the agent response, *not* the `X-Session-Id` memory header — these are two different identifiers) |
+| `/api/v1/memory/traces` | GET | Audit log of every memory/state read, write, and delete |
+
+### Demo / testing identities
+
+There is no real login. Authorization is simulated via request headers (`agent-backend/auth.py`) — this is explicit and documented, not a security boundary:
+
+```bash
+-H "X-User-Role: student"   # default if omitted
+-H "X-User-Role: staff"     # required to approve/reject tickets
+-H "X-User-Role: guest"     # used to demonstrate unauthorized tool calls
+-H "X-User-Id: STU-1001"    # free-text synthetic student ID, any value works
+```
+
+Example end-to-end walkthrough:
+
+```bash
+# 1. Student asks the agent to help with a lost ID (creates a draft ticket)
+curl -X POST http://127.0.0.1:8000/api/v1/agent/student-support \
+  -H "Content-Type: application/json" -H "X-User-Id: STU-1001" \
+  -d '{"message": "I lost my student ID card and need a replacement."}'
+# -> status: "human_approval_required", a DRAFT-### ticket id in the response
+
+# 2. Staff approves it
+curl -X POST http://127.0.0.1:8000/api/v1/support-tickets/DRAFT-001/approve \
+  -H "X-User-Role: staff"
+
+# 3. A grounded knowledge question, with sources
+curl -X POST http://127.0.0.1:8000/api/v1/student-support \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What counts as examination malpractice at Makerere?"}'
+```
+
 ## Frontend
 
-`frontend/` is a minimal React (Vite) test console for the backend above — not a polished student-facing app, just enough UI to see and test what the backend does. It supports:
+`frontend/` is a minimal React (Vite) test console — not a polished student-facing app, just enough UI to exercise the backend above:
 
 - A backend-URL field, a role selector (`student`/`staff`/`guest`, sent as `X-User-Role`), and a live health-check dot.
-- A chat box that shows the model's grounded answer (rendered from the small subset of markdown the prompts actually produce — bold, lists, tables), its `sources`, and any tool calls.
-- `check_timetable` results as a real table; `create_support_ticket` results as a draft card with **Approve**/**Reject** buttons, shown only when the selected role is `staff`.
+- A chat box rendering the model's answer, its `sources`, and any tool calls — `check_timetable` as a real table, `create_support_ticket` as a draft card with **Approve**/**Reject** buttons (staff role only).
+- An agent-steps card showing the bounded agent's per-iteration plan/act/observe trace.
 
 ```bash
 cd frontend
-npm install   # already done; re-run only if node_modules is missing
+npm install
 npm run dev   # starts the Vite dev server at http://localhost:5173
 ```
 
-The backend must be running separately (see above) with CORS enabled for local development (already configured in `main.py`). Point the "Backend URL" field at wherever `uvicorn` is listening (e.g. `http://127.0.0.1:8001` if port 8000 is taken).
-
-The test suite mocks the Groq API boundary, so it runs without a real API key. A separate, explicitly-opt-in real-API test (`tests/test_integration_groq.py`) is skipped unless `GROQ_API_KEY` is configured.
+The backend must be running separately, with CORS already enabled for local development in `main.py`. Point the "Backend URL" field at wherever `uvicorn` is listening.
 
 ## Responsible AI / Engineering Note
 This project follows a bounded, traceable AI design. AI is used only in approved support scenarios and must remain grounded in curated academic knowledge. High-impact operational decisions are intentionally withheld from automated processing and remain under human review. No confidential university or personal data is used in the project.
 
 ## GitHub Presentation Summary
-This repository demonstrates a professional Week 1 capstone foundation for a bounded AI-native support workflow. It focuses on problem framing, requirement definition, AI boundary design, and early architecture planning in a way that is realistic, academically defensible, and safe for student-support use cases.
+This repository is the **v1.0.0 release** of an 8-week bounded AI-native/agentic capstone build: problem framing and requirement definition (Week 1), a foundation-model baseline (Week 2), retrieval-augmented generation over a controlled policy corpus (Week 3), explicit tool calling with human approval (Week 4), a bounded multi-step agent (Week 5), per-session memory and case history (Week 6), and an evaluation/guardrails/failure-catalogue pass (Week 7), hardened and tagged for final submission (Week 8). It is realistic, academically defensible, and safe for a student-support use case — not a production system.
 
 ## Project Evidence and Reporting
-- Week 1 details and progress are recorded in `docs/weekly-reports/week-1-progress-report.md`
-- The AI engineering log is in `docs/ai-engineering-log.md`
-- The initial system context is in `docs/architecture/initial-architecture.md`
-- The ClickUp task plan is in `docs/clickup-week1-task-plan.md`
+- Weekly progress reports for every week are in `docs/weekly-reports/` (Week 1 as PDF; Weeks 3-7 as Markdown).
+- RAG evaluation and failures: `docs/rag-evaluation.md`, `docs/rag-failures.md`.
+- Tool catalogue and test evidence: `docs/tool-catalogue.md`, `docs/tool-test-evidence.md`.
+- Agent task contract: `docs/agent-task-contract.md`.
+- Memory design and interoperability spec: `docs/memory-design.md`, `docs/interoperability.md`.
+- 39-scenario evaluation benchmark, guardrails, and failure catalogue: `docs/evaluation.md`, `docs/guardrails.md`, `docs/failure-catalogue.md`.
+- Execution traces against the live Groq API: `evidence/traces/`, `evidence/week7/`.
+
+## Known Limitations
+
+- **High-impact topics (admissions, grades, discipline, fees, legal, medical) are refused by prompt instruction, not a code-level topic filter.** The tool surface itself cannot act on these (no tool exists that could decide a grade, fee, or disciplinary outcome), but a sufficiently adversarial prompt could still get an inappropriate *sentence* out of the model's final text. Documented in `docs/agent-task-contract.md` (condition H5) and `docs/failure-catalogue.md` (Failure 6) — a known, inherent limitation of any LLM-backed system, not something this release claims to have fully solved.
+- **Memory is intentionally one-turn, per-session, with a 24h TTL** (`docs/memory-design.md`) — not a full conversation history. A deliberate scope boundary, not an oversight.
+- **Authorization is a header-based simulation** (`X-User-Role`), not real authentication. Documented in `agent-backend/auth.py` and `docs/tool-catalogue.md`.
+- **The corpus is a fixed, synthetic/public snapshot** of Makerere policy documents (`docs/corpus-source-register.md`), not a live integration with any official university system.
 
 ## License and Safety Note
 This repository is for academic and project demonstration purposes only. It does not contain real credentials, secrets, protected academic records, or production user data.
-Added this
