@@ -8,11 +8,11 @@ This project is a BSE4104 capstone prototype for an AI-native student-support sy
 The system is designed around an important principle: AI is used where it adds value in understanding, retrieval, explanation, and workflow assistance, while deterministic software remains responsible for validation, authorization, routing rules, and controlled system actions. Any high-impact or sensitive decisions remain under human approval.
 
 ## Team
-- OkemaPaulMark — paulokema342@gmail.com
-- KizitoRyan — ryankizito08@gmail.com
-- Benita Akakikunda — benitaakakikunda@gmail.com
-- Seand1975
-- Mwesigwa Duncan — mwesigwaduncan@gmail.com
+- Okema Paul Mark — AI Engineering Lead
+- Kizito Ryan — Quality/Security Lead
+- Benita Akakikunda — Application/Integration Lead
+- Mushieja Abraham — Project Lead
+- Mwesigwa Duncan — DevOps/Documentation Lead
 
 ## Problem
 University students often face fragmented guidance across documents, portals, and support procedures. Common academic tasks such as checking timetable details, clarifying course-related issues, or starting a support request can be slow and inconsistent when the relevant guidance is not centralized or clearly traceable.
@@ -103,6 +103,7 @@ This prototype intentionally excludes:
 - `docs/agent-task-contract.md`, `docs/agent-architecture.md` — Week 5: bounded agent goal, approved tools, limits, and terminal statuses
 - `docs/memory-design.md`, `docs/interoperability.md` — Week 6: memory/state data-handling spec and the MCP-style interface spec for `check_timetable`
 - `docs/evaluation.md`, `docs/guardrails.md`, `docs/failure-catalogue.md` — Week 7: 39-scenario evaluation benchmark, code-level guardrails, and six documented real failures with fixes
+- `docs/RELEASE_NOTES_v1.0.0.md` — Week 8: the `v1.0.0` release notes
 - `prompts/` — prompt and workflow notes
 - `knowledge/` — approved project knowledge sources
 - `agent-backend/` — FastAPI backend and LLM integration (see `agent-backend/README.md`); includes `agent-backend/tests/`
@@ -260,6 +261,7 @@ This repository is the **v1.0.0 release** of an 8-week bounded AI-native/agentic
 - Memory design and interoperability spec: `docs/memory-design.md`, `docs/interoperability.md`.
 - 39-scenario evaluation benchmark, guardrails, and failure catalogue: `docs/evaluation.md`, `docs/guardrails.md`, `docs/failure-catalogue.md`.
 - Execution traces against the live Groq API: `evidence/traces/`, `evidence/week7/`.
+- **v1.0.0 release notes:** `docs/RELEASE_NOTES_v1.0.0.md`.
 
 ## Known Limitations
 
