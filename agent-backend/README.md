@@ -1,30 +1,44 @@
 # Agent Backend
 
-A FastAPI backend for the University Student-Support Case Agent.
-Week 2 added a foundation-model baseline (Groq + versioned prompts).
-Week 3 added retrieval-augmented generation (RAG): questions are
-answered from a controlled corpus of Makerere University policy
-documents, with sources returned alongside every answer. Week 4 adds
-explicit tool calling: the model can request `check_timetable` or
-`create_support_ticket`, executed by the application (never by the
-model) after validation and authorization, with ticket submission
-requiring a separate human approval step. See the root `README.md` for
-full setup instructions.
+A FastAPI backend for the University Student-Support Case Agent —
+**v1.0.0**, the full 8-week build. Week 2 added a foundation-model
+baseline (Groq + versioned prompts). Week 3 added retrieval-augmented
+generation (RAG) over a controlled Makerere policy corpus, with cited
+sources. Week 4 added explicit tool calling (`check_timetable`,
+`create_support_ticket`), executed by the application (never the
+model), with ticket submission requiring a separate human-approval
+step. Week 5 added a bounded multi-step agent (plan→act→observe) over
+the same tools, stopping at one of six terminal statuses. Week 6 added
+bounded per-session memory and a privacy-filtered case-history store,
+both unable to override the agent's budgets or approval boundary. Week
+7 added a 39-scenario evaluation benchmark, documented guardrails, and
+a failure catalogue. See the root `README.md` for full setup
+instructions, the API table, and demo identities.
 
 ## Layout
 
 ```text
 agent-backend/
-├── main.py           # FastAPI app: /health, /api/v1/student-support, /api/v1/support-tickets/*
-├── config.py         # Environment-based settings (GROQ_API_KEY, RAG_TOP_K, MAX_TOOL_CALLS, ...)
+├── main.py           # FastAPI app: all endpoints (see root README's API table)
+├── config.py         # Environment-based settings, grouped by the week that introduced them
 ├── schemas.py        # Pydantic request/response models and validation
 ├── auth.py            # Minimal, explicit role header (X-User-Role) - not real authentication
 ├── ingest.py           # CLI: builds/updates the vector index from the corpus
 ├── chat_cli.py          # Interactive terminal client for manual testing
+├── scripts/
+│   └── capture_agent_trace.py  # Runs a real Groq request through the agent and validates the trace
 ├── llm/
 │   ├── prompts.py      # Versioned prompts: V1.0, V2.0 (Wk2), RAG-v1.0 (Wk3), TOOLS-v1.0 (Wk4)
 │   ├── client.py        # Thin wrapper around the Groq SDK, incl. tool-calling completions
-│   └── service.py        # Orchestrates retrieval + (if enabled) the bounded tool-calling loop
+│   └── service.py        # Orchestrates retrieval + the bounded tool-calling loop (single round-trip)
+├── agent/
+│   ├── contract.py      # AgentTaskContract: goal, approved tools, budgets (docs/agent-task-contract.md)
+│   ├── orchestrator.py    # Week 5: the bounded plan->act->observe loop (POST /api/v1/agent/student-support)
+│   ├── state.py            # Week 6: 6-stage lifecycle state model, terminal-sink enforcement
+│   ├── state_store.py       # Week 6: SQLite-backed persistence for agent run state
+│   ├── memory.py             # Week 6: bounded one-turn-per-session memory, TTL-based expiry
+│   ├── case_history.py        # Week 6: privacy-filtered case-history store (rejects raw transcripts/PII)
+│   └── traces.py               # Week 6/7: audit log of every memory/state read/write/delete
 ├── rag/
 │   ├── corpus_manifest.py  # Stable DOC### id -> filename/provenance mapping
 │   ├── loader.py            # Extracts text per PDF page via pypdf
@@ -41,7 +55,7 @@ agent-backend/
 ├── data/
 │   ├── timetable/timetable.json  # Synthetic, committed (see file's own _disclaimer field)
 │   ├── chroma/                    # RAG vector index, gitignored - rebuild with ingest.py
-│   └── tickets.db                  # Ticket store, gitignored runtime state
+│   └── *.db                        # Tickets/sessions/state/case-history/traces stores, gitignored runtime state
 ├── tests/            # Automated tests (LLM/embeddings/Groq boundary mocked/local; see
 │                       tests/test_integration_groq.py for the real-API opt-in test)
 ├── requirements.txt
@@ -93,6 +107,17 @@ curl -X POST http://127.0.0.1:8000/api/v1/support-tickets/DRAFT-001/approve \
   -H "X-User-Role: staff"
 ```
 
+## The bounded agent (Week 5-6)
+
+`POST /api/v1/agent/student-support` is the full system: retrieval +
+tools + a plan→act→observe loop bounded by `AGENT_MAX_ITERATIONS` and
+`MAX_TOOL_CALLS`, stopping at one of six terminal statuses (see
+`docs/agent-task-contract.md`). Pass `X-Session-Id` and `X-Memory: on`
+to enable one-prior-turn memory for that session (`docs/memory-design.md`).
+The approval boundary is unchanged from Week 4: `approve_ticket` and
+`reject_ticket` are not registered as tools, so neither the agent nor
+memory can ever reach them.
+
 ## Observability and tracing
 
 Every agent run is traced end to end (model parameters, prompt version
@@ -107,14 +132,10 @@ curl -H "X-User-Role: staff" \
 python scripts/capture_observability_traces.py        # regenerate ../evidence/traces/observability/
 ```
 
-## Planned for later weeks
+## Known limitations
 
-- LangGraph-based agent orchestration
-- Persistent memory of an active support case
-- LangSmith evaluation (tracing is now done in-house, see above)
-
-None of the above is implemented yet by design — see
-`../docs/architecture.md`, `../docs/tool-catalogue.md`,
-`../docs/prompt-specification.md`, `../docs/model-selection.md`, and
-`../docs/corpus-source-register.md` for the reasoning behind the
-current scope.
+See the root `README.md`'s "Known Limitations" section and
+`docs/failure-catalogue.md` for the full, honest list - most notably,
+high-impact topics are currently refused by prompt instruction rather
+than a code-level topic filter on the model's text output (the tool
+surface itself has no code path to act on them either way).

@@ -75,13 +75,15 @@ def _audit(event: str, actor: Actor, **fields: Any) -> None:
 app = FastAPI(
     title="University Student-Support Case Agent API",
     description=(
-        "Week 4: retrieval-augmented, tool-using student-support interaction. "
-        "The model can request the check_timetable and create_support_ticket "
-        "tools, executed by the application after validation and "
-        "authorization; ticket submission still requires a separate human "
-        "approval step the model cannot bypass."
+        "v1.0.0: a bounded, RAG-grounded, tool-using student-support agent. "
+        "The model can request check_timetable or create_support_ticket, "
+        "executed by the application after validation and authorization "
+        "(/api/v1/student-support), or run inside a bounded plan-act-observe "
+        "loop with optional per-session memory (/api/v1/agent/student-support). "
+        "Ticket submission always requires a separate staff-only approval "
+        "step that neither the model nor memory can bypass."
     ),
-    version="0.4.0",
+    version="1.0.0",
 )
 
 # Permissive CORS for local development only (e.g. the Vite dev server on
