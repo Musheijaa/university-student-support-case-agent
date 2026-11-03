@@ -12,7 +12,7 @@ The system is designed around an important principle: AI is used where it adds v
 - Kizito Ryan — Quality/Security Lead
 - Benita Akakikunda — Application/Integration Lead
 - Mushieja Abraham — Project Lead
-- Mwesigwa Duncan — DevOps/Documentation Lead
+- Mwesigwa Duncan — DevOps Lead
 
 ## Problem
 University students often face fragmented guidance across documents, portals, and support procedures. Common academic tasks such as checking timetable details, clarifying course-related issues, or starting a support request can be slow and inconsistent when the relevant guidance is not centralized or clearly traceable.

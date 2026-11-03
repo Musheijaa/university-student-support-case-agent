@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { askAgentSupport, askStudentSupport, checkHealth } from './api'
+import { askAgentSupport, checkHealth } from './api'
 import AgentStepsCard from './AgentStepsCard'
 import renderMarkdown from './markdown'
 import TicketCard from './TicketCard'
 import TimetableCard from './TimetableCard'
 
 const STORAGE_KEY = 'unisupport-frontend-settings'
+const CHAT_STORAGE_KEY = 'unisupport-frontend-chat'
 
 function loadSettings() {
   try {
@@ -18,6 +19,17 @@ function loadSettings() {
   }
 }
 
+function loadMessages() {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 let nextMessageId = 1
 
 export default function App() {
@@ -25,17 +37,36 @@ export default function App() {
   const [baseUrl, setBaseUrl] = useState(saved.baseUrl || 'http://127.0.0.1:8000')
   const [role, setRole] = useState(saved.role || 'student')
   const [userId, setUserId] = useState(saved.userId || 'demo-student')
-  const [mode, setMode] = useState(saved.mode || 'w4') // 'w4' | 'w5'
+  const [showTrace, setShowTrace] = useState(saved.showTrace ?? false)
   const [health, setHealth] = useState('unknown')
 
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState(() => {
+    const restored = loadMessages()
+    const maxId = restored.reduce((max, m) => Math.max(max, m.id || 0), 0)
+    nextMessageId = maxId + 1
+    return restored
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const transcriptEndRef = useRef(null)
+  const inputRef = useRef(null)
+
+  function fillInput(text) {
+    setInput(text)
+    inputRef.current?.focus()
+  }
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ baseUrl, role, userId, mode }))
-  }, [baseUrl, role, userId, mode])
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ baseUrl, role, userId, showTrace }))
+  }, [baseUrl, role, userId, showTrace])
+
+  useEffect(() => {
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
+  }, [messages])
+
+  function handleClearChat() {
+    setMessages([])
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -60,41 +91,26 @@ export default function App() {
     setLoading(true)
 
     try {
-      if (mode === 'w5') {
-        // --- Week 5 agent endpoint ---
-        const result = await askAgentSupport(baseUrl, question, role, userId)
-        // Extract ticket tool calls from steps for the TicketCard/TimetableCard renderers
-        const toolCalls = (result.steps || [])
-          .filter((s) => s.decision === 'tool_call' && s.tool_result)
-          .map((s) => ({ tool: s.tool_name, result: s.tool_result }))
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: nextMessageId++,
-            role: 'assistant',
-            mode: 'w5',
-            text: result.response,
-            agentResult: result,
-            toolCalls,
-          },
-        ])
-      } else {
-        // --- Week 4 endpoint (unchanged) ---
-        const result = await askStudentSupport(baseUrl, question, role, userId)
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: nextMessageId++,
-            role: 'assistant',
-            mode: 'w4',
-            text: result.response,
-            promptVersion: result.prompt_version,
-            model: result.model,
-            sources: result.sources || [],
-            toolCalls: result.tool_calls || [],
-          },
-        ])
-      }
+      const result = await askAgentSupport(baseUrl, question, role, userId)
+      // Extract tool calls from the agent's step trace for the
+      // TimetableCard/TicketCard renderers (shown either way - they're
+      // part of the answer, not just trace detail).
+      const toolCalls = (result.steps || [])
+        .filter((s) => s.decision === 'tool_call' && s.tool_result)
+        .map((s) => ({ tool: s.tool_name, result: s.tool_result }))
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextMessageId++,
+          role: 'assistant',
+          text: result.response,
+          agentResult: result,
+          toolCalls,
+          sources: result.sources || [],
+          promptVersion: result.prompt_version,
+          model: result.model,
+        },
+      ])
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -108,8 +124,18 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <h1>UniSupport AI — Test Console</h1>
-        <div className="settings-row">
+        <div className="topbar-title-row">
+          <h1>UniSupport AI — Test Console</h1>
+          <div className="topbar-title-actions">
+            {messages.length > 0 && (
+              <button type="button" className="link-button" onClick={handleClearChat}>
+                Clear chat
+              </button>
+            )}
+            <span className={`health-dot health-${health}`} title={`Backend: ${health}`} />
+          </div>
+        </div>
+        <div className="settings-panel">
           <label>
             Backend URL
             <input
@@ -130,27 +156,47 @@ export default function App() {
             User ID
             <input value={userId} onChange={(e) => setUserId(e.target.value)} />
           </label>
-          <label>
-            Mode
-            <select value={mode} onChange={(e) => { setMode(e.target.value); setMessages([]) }}>
-              <option value="w4">Week 4 — RAG + Tools</option>
-              <option value="w5">Week 5 — Agent</option>
-            </select>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={showTrace}
+              onChange={(e) => setShowTrace(e.target.checked)}
+            />
+            Show execution trace
           </label>
-          <span className={`health-dot health-${health}`} title={`Backend: ${health}`} />
         </div>
       </header>
 
       <main className="transcript">
         {messages.length === 0 && (
-          <p className="empty-hint">
-            {mode === 'w5'
-              ? 'Week 5 Agent mode — every response shows the full execution trace (iterations, tool calls, observations). Try: "When is BSE4104 scheduled?" or "I can\'t log in to the portal."'
-              : 'Ask a knowledge question (grounded in the policy corpus), a timetable question (e.g. "When is BSE4104 scheduled?"), or describe a problem (e.g. "I can\'t access the student portal") to see a support-ticket draft. Switch role to "staff" above to approve or reject a resulting ticket.'}
-          </p>
+          <div className="empty-state">
+            <p className="empty-state-title">Ask a question to get started</p>
+            <div className="suggestion-chips">
+              <button type="button" onClick={() => fillInput('What counts as examination malpractice at Makerere?')}>
+                Policy question
+              </button>
+              <button type="button" onClick={() => fillInput('When is BSE4104 scheduled?')}>
+                Timetable lookup
+              </button>
+              <button type="button" onClick={() => fillInput("I can't access the student portal")}>
+                Report a problem
+              </button>
+            </div>
+            <p className="empty-state-hint">
+              Switch role to "staff" to approve or reject a resulting support ticket. Tick "Show
+              execution trace" to see the agent's plan/act/observe steps behind each answer.
+            </p>
+          </div>
         )}
         {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} baseUrl={baseUrl} role={role} userId={userId} />
+          <MessageBubble
+            key={message.id}
+            message={message}
+            baseUrl={baseUrl}
+            role={role}
+            userId={userId}
+            showTrace={showTrace}
+          />
         ))}
         {loading && <div className="bubble assistant pending">Thinking…</div>}
         <div ref={transcriptEndRef} />
@@ -158,9 +204,10 @@ export default function App() {
 
       <form className="composer" onSubmit={handleSend}>
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={mode === 'w5' ? 'Ask the agent…' : 'Type your question…'}
+          placeholder="Type your question…"
           disabled={loading}
         />
         <button type="submit" disabled={loading || !input.trim()}>
@@ -171,7 +218,7 @@ export default function App() {
   )
 }
 
-function MessageBubble({ message, baseUrl, role, userId }) {
+function MessageBubble({ message, baseUrl, role, userId, showTrace }) {
   if (message.role === 'student') {
     return <div className="bubble student">{message.text}</div>
   }
@@ -180,13 +227,20 @@ function MessageBubble({ message, baseUrl, role, userId }) {
     return <div className="bubble error">{message.text}</div>
   }
 
+  // The timetable/ticket tool cards below already show this data structured -
+  // suppress the model's own markdown table so it isn't shown twice.
+  const hasStructuredToolCard = message.toolCalls?.some(
+    (c) => c.tool === 'check_timetable' || c.tool === 'create_support_ticket',
+  )
+
   return (
     <div className="bubble assistant">
       {message.text && (
-        <div className="response-text">{renderMarkdown(message.text)}</div>
+        <div className="response-text">
+          {renderMarkdown(message.text, { suppressTables: hasStructuredToolCard })}
+        </div>
       )}
 
-      {/* Tool cards — shared between w4 and w5 */}
       {message.toolCalls?.length > 0 && (
         <div className="tool-calls">
           {message.toolCalls.map((call, i) =>
@@ -209,34 +263,28 @@ function MessageBubble({ message, baseUrl, role, userId }) {
         </div>
       )}
 
-      {/* Week 5: agent execution trace */}
-      {message.mode === 'w5' && message.agentResult && (
+      {showTrace && message.agentResult ? (
         <AgentStepsCard agentResult={message.agentResult} />
-      )}
-
-      {/* Week 4: sources */}
-      {message.sources?.length > 0 && (
-        <div className="sources">
-          <div className="sources-title">Sources</div>
-          <ul>
-            {message.sources.map((s, i) => (
-              <li key={i}>
-                {s.document} (p.{s.page})
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {message.promptVersion && (
-        <div className="meta">
-          {message.promptVersion} · {message.model}
-        </div>
-      )}
-      {message.mode === 'w5' && message.agentResult && (
-        <div className="meta">
-          agent · {message.agentResult.status}
-        </div>
+      ) : (
+        <>
+          {message.promptVersion && (
+            <div className="meta">
+              {message.promptVersion} · {message.model}
+            </div>
+          )}
+          {message.sources?.length > 0 && (
+            <div className="sources">
+              <div className="sources-title">Sources</div>
+              <ul>
+                {message.sources.map((s, i) => (
+                  <li key={i}>
+                    {s.document} (p.{s.page})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

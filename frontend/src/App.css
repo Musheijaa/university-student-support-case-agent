@@ -2,51 +2,100 @@
   display: flex;
   flex-direction: column;
   height: 100svh;
-  max-width: 720px;
+  max-width: 880px;
   margin: 0 auto;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--border);
 }
 
 .topbar {
-  padding: 12px 16px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid var(--border);
+  background: var(--code-bg);
+}
+
+.topbar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 .topbar h1 {
   font-size: 18px;
-  margin: 0 0 10px;
+  margin: 0;
   text-align: left;
 }
 
-.settings-row {
+.topbar-title-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.settings-row label {
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: var(--text-h);
+}
+
+.settings-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 14px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.settings-panel label {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   font-size: 11px;
   color: var(--text);
   text-align: left;
+  min-width: 0;
 }
 
-.settings-row input,
-.settings-row select {
+.settings-panel label.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+  align-self: end;
+}
+
+.settings-panel .checkbox-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  accent-color: var(--accent);
+}
+
+.settings-panel input:not([type="checkbox"]),
+.settings-panel select {
   font: inherit;
   font-size: 13px;
-  padding: 4px 6px;
+  padding: 5px 7px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--bg);
   color: var(--text-h);
-  min-width: 90px;
-}
-
-.settings-row input[placeholder] {
-  min-width: 190px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .health-dot {
@@ -54,7 +103,7 @@
   height: 9px;
   border-radius: 50%;
   background: #999;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 .health-ok {
   background: #22c55e;
@@ -73,12 +122,49 @@
   text-align: left;
 }
 
-.empty-hint {
-  color: var(--text);
-  font-size: 14px;
-  max-width: 46ch;
-  margin: 24px auto;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 48ch;
+  margin: 48px auto 0;
   text-align: center;
+}
+
+.empty-state-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+.suggestion-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.suggestion-chips button {
+  background: var(--bg);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+.suggestion-chips button:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.empty-state-hint {
+  color: var(--text);
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 0;
 }
 
 .bubble {
@@ -129,6 +215,25 @@
 .response-text ol {
   margin: 0 0 8px;
   padding-left: 20px;
+}
+
+.md-heading {
+  margin: 10px 0 6px;
+  color: var(--text-h);
+  line-height: 130%;
+}
+.md-heading:first-child {
+  margin-top: 0;
+}
+h3.md-heading { font-size: 16px; }
+h4.md-heading { font-size: 15px; }
+h5.md-heading { font-size: 14px; }
+h6.md-heading { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.md-rule {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 10px 0;
 }
 
 .md-table {
