@@ -1,8 +1,8 @@
 const DECISION_LABELS = {
-  tool_call: '🔧 Tool call',
-  final_answer: '✅ Final answer',
-  stop: '🛑 Stop',
-  error: '❌ Error',
+  tool_call: 'Tool call',
+  final_answer: 'Final answer',
+  stop: 'Stop',
+  error: 'Error',
 }
 
 const STATUS_COLOURS = {
@@ -46,6 +46,7 @@ export default function AgentStepsCard({ agentResult }) {
         <span>iterations: <strong>{iteration_count}</strong> / {max_iterations}</span>
         <span>tool calls: <strong>{tool_call_count}</strong> / {max_tool_calls}</span>
         {prompt_version && <span>prompt: <code>{prompt_version}</code></span>}
+        {model && <span>model: <code>{model}</code></span>}
       </div>
 
       {plan && (
@@ -83,11 +84,11 @@ export default function AgentStepsCard({ agentResult }) {
                 <span className={`agent-step-value ${step.tool_result.success ? 'result-ok' : 'result-fail'}`}>
                   {step.tool_result.success
                     ? step.tool_result.sessions
-                      ? `✓ ${step.tool_result.sessions.length} session(s) for ${step.tool_result.course_code}`
+                      ? `${step.tool_result.sessions.length} session(s) for ${step.tool_result.course_code}`
                       : step.tool_result.ticket_id
-                        ? `✓ ${step.tool_result.ticket_id} — ${step.tool_result.status}`
-                        : '✓ success'
-                    : `✗ ${step.tool_result.error}`}
+                        ? `${step.tool_result.ticket_id} — ${step.tool_result.status}`
+                        : 'success'
+                    : step.tool_result.error}
                 </span>
               </div>
             )}
@@ -110,7 +111,7 @@ export default function AgentStepsCard({ agentResult }) {
       </div>
 
       {sources?.length > 0 && (
-        <div className="sources" style={{ marginTop: '8px' }}>
+        <div className="sources">
           <div className="sources-title">Sources</div>
           <ul>
             {sources.map((s, i) => (
@@ -119,10 +120,6 @@ export default function AgentStepsCard({ agentResult }) {
           </ul>
         </div>
       )}
-
-      <div className="meta" style={{ marginTop: '6px' }}>
-        agent-v1.0 · {model}
-      </div>
     </div>
   )
 }
