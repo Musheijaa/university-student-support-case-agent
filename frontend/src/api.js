@@ -31,16 +31,6 @@ export function checkHealth(baseUrl) {
   return request(baseUrl, '/health', { method: 'GET' }, 'student', 'health-check')
 }
 
-export function askStudentSupport(baseUrl, message, role, userId) {
-  return request(
-    baseUrl,
-    '/api/v1/student-support',
-    { method: 'POST', body: JSON.stringify({ message }) },
-    role,
-    userId,
-  )
-}
-
 export function askAgentSupport(baseUrl, message, role, userId) {
   return request(
     baseUrl,
